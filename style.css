@@ -1,14 +1,27 @@
 /* ===========================================================
    Your site's styles. Change anything here — colors, fonts,
    sizes. Every page on the site uses this one file.
+
+   Palette: warm paper background, pink + green accents,
+   serif headings over a plain sans body — a little journal-like.
    =========================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&display=swap');
+
 :root {
-  --ink: #16161a;          /* main text color */
-  --muted: #6b6b76;        /* quieter text */
-  --accent: #2f4fd8;       /* links and highlights */
-  --paper: #fdfdfb;        /* page background */
-  --line: #e4e4e0;         /* borders */
+  --ink: #2b2420;          /* main text color — warm near-black */
+  --muted: #8a7f72;        /* quieter text — warm gray */
+  --paper: #faf6ef;        /* page background — warm off-white */
+  --paper-raised: #fffdf9; /* slightly lighter, for cards */
+  --line: #e6ddd0;         /* borders */
+
+  --pink: #c9587d;         /* primary accent — dusty rose */
+  --pink-soft: #f4dde5;    /* pink, for selection/backgrounds */
+  --green: #4f7a5c;        /* secondary accent — sage */
+  --green-soft: #dfe8de;   /* green, for selection/backgrounds */
+
+  --accent: var(--pink);   /* links and highlights */
+  --font-serif: "Lora", Georgia, "Iowan Old Style", serif;
 }
 
 * { box-sizing: border-box; }
@@ -18,15 +31,38 @@ body {
   padding: 0 1.25rem 5rem;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   font-size: 18px;
   line-height: 1.6;
+}
+
+::selection {
+  background: var(--pink-soft);
+  color: var(--ink);
 }
 
 /* Keeps everything in a readable column in the middle of the page */
 header, main, footer {
   max-width: 44rem;
   margin: 0 auto;
+}
+
+/* --- gentle entrance, so the page doesn't just snap into place --- */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+header { animation: fade-in-up 0.5s ease both; }
+main   { animation: fade-in-up 0.6s ease 0.08s both; }
+footer { animation: fade-in-up 0.6s ease 0.16s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* --- top navigation ---------------------------------------- */
@@ -42,8 +78,9 @@ header {
 }
 
 header .site-name {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
   text-decoration: none;
   color: var(--ink);
   margin-right: auto;
@@ -53,20 +90,26 @@ header nav a {
   color: var(--muted);
   text-decoration: none;
   margin-left: 1.25rem;
+  transition: color 0.2s ease;
 }
 
-header nav a:hover { color: var(--accent); }
+header nav a:hover { color: var(--pink); }
 
 /* --- text --------------------------------------------------- */
 
+h1, h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
 h1 {
-  font-size: 2.1rem;
+  font-size: 2.2rem;
   line-height: 1.2;
   margin: 0 0 0.5rem;
 }
 
 h2 {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   margin: 2.5rem 0 0.75rem;
 }
 
@@ -76,7 +119,21 @@ h2 {
   margin: 0 0 2rem;
 }
 
-a { color: var(--accent); }
+/* Links in body text get a soft underline that grows in on hover,
+   instead of just changing color. */
+main a, footer a {
+  color: var(--pink);
+  text-decoration: none;
+  background-image: linear-gradient(var(--green), var(--green));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size 0.25s ease;
+}
+
+main a:hover, footer a:hover {
+  background-size: 100% 2px;
+}
 
 /* --- the list of links on the projects pages ----------------- */
 
@@ -87,24 +144,34 @@ a { color: var(--accent); }
 }
 
 .card-list li {
+  background: var(--paper-raised);
   border: 1px solid var(--line);
+  border-left: 3px solid var(--pink);
   border-radius: 10px;
   margin-bottom: 0.9rem;
-  transition: border-color 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.card-list li:hover { border-color: var(--accent); }
+.card-list li:nth-child(even) { border-left-color: var(--green); }
+
+.card-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -12px rgba(43, 36, 32, 0.25);
+  border-color: var(--muted);
+}
 
 .card-list a {
   display: block;
   padding: 1.1rem 1.25rem;
   text-decoration: none;
   color: inherit;
+  background-image: none; /* cancel the underline-grow effect above */
 }
 
 .card-list .title {
-  font-weight: 700;
-  color: var(--accent);
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
   display: block;
 }
 
@@ -121,11 +188,35 @@ a { color: var(--accent); }
   color: var(--muted);
   text-decoration: none;
   font-size: 0.95rem;
+  transition: color 0.2s ease;
 }
 
-.back:hover { color: var(--accent); }
+.back:hover { color: var(--green); }
 
-canvas { max-width: 100%; }
+main canvas {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -14px rgba(43, 36, 32, 0.3);
+}
+
+/* --- decorative vine border (wide screens only) --------------- */
+/* Drawn by vines.js. Hidden below 1200px — there's no margin to
+   put it in once the content column fills the screen. */
+
+.vine-rail {
+  position: fixed;
+  top: 0;
+  width: 80px;
+  height: 100vh;
+  display: none;
+}
+
+.vine-rail-left  { left: 0; }
+.vine-rail-right { right: 0; }
+
+@media (min-width: 1200px) {
+  .vine-rail { display: block; }
+}
 
 /* --- footer -------------------------------------------------- */
 
