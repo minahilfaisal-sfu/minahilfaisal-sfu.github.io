@@ -11,24 +11,21 @@ const colors = {
 }
 
 let circleX = 50;
-let circleY = 400;
+let circleY = 50;
 let size = 50;
 let radius = size / 2;
 let speedX = 5;
-// let increment = 3;
+let increment = 1;
 
 function draw() { // -> runs forever, infinite loop
   background(colors.black);
   fill(colors.pink);
   stroke(colors.white);
 
-  // circleY = height / 2; // height is a variable created by p5
+  circleY = height / 2; // height is a variable created by p5
   circleX += speedX; // move the circle to the right faster
-  // circleY = height / 2;
-  circleY += increment; // move the circle down as it grows
 
-  // size += increment; // increase the size of the circle
-  // circleY += increment; // move the circle down as it grows
+  size += increment; // increase the size of the circle
   radius = size / 2;
 
   // horizontal border
