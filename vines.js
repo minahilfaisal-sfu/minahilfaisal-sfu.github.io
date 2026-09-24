@@ -4,7 +4,7 @@
 // collide with a sketch.js that uses global setup()/draw().
 //
 // The pattern is seeded, so it looks the same on every visit.
-// Hover your mouse over a vine and it sways gently.
+// The vines sway gently at all times.
 //
 // Safe to ignore or delete — nothing else on the site depends
 // on this file.
@@ -18,7 +18,6 @@ function vineSketch(side) {
     let railWidth = 80;
     let points = [];
     let decorations = [];
-    let hovering = false;
 
     function buildPattern(h) {
       points = [];
@@ -122,22 +121,10 @@ function vineSketch(side) {
       cnv.parent(container);
 
       buildPattern(window.innerHeight);
-      render(0);
-      p.noLoop();
-
-      cnv.mouseOver(() => {
-        hovering = true;
-        p.loop();
-      });
-      cnv.mouseOut(() => {
-        hovering = false;
-        p.redraw();
-      });
     };
 
     p.draw = function () {
-      render(hovering ? 4 : 0);
-      if (!hovering) p.noLoop();
+      render(4);
     };
 
     p.windowResized = function () {
@@ -145,7 +132,6 @@ function vineSketch(side) {
       railWidth = (container && container.clientWidth) || railWidth;
       p.resizeCanvas(railWidth, window.innerHeight);
       buildPattern(window.innerHeight);
-      render(0);
     };
   };
 }
