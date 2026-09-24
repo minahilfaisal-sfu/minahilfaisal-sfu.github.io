@@ -195,6 +195,11 @@ main a:hover, footer a:hover {
 
 main canvas {
   max-width: 100%;
+  /* p5 sets an inline width/height on the canvas itself (for sharp
+     rendering on retina screens), which blocks the browser's normal
+     "auto height scales with width" behavior. Force it back on so
+     shrinking the canvas doesn't stretch it out of proportion. */
+  height: auto !important;
   border-radius: 10px;
   box-shadow: 0 8px 24px -14px rgba(43, 36, 32, 0.3);
 }
