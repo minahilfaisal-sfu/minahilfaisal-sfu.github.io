@@ -66,5 +66,14 @@ function draw() {
 }
 
 function mousePressed() {
-  circleX = 0; // reset the circle to the left side of the canvas
+  // change color and direction randomly
+  let random = Math.random();
+  if (random > 0.5) {
+    speedY = speedY * -1;
+  } else {
+    speedX = speedX * -1;
+  }
+
+  [r, g, b] = generateRandomColor();
+  fill(r, g, b);
 }
