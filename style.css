@@ -193,6 +193,24 @@ main a:hover, footer a:hover {
 
 .back:hover { color: var(--green); }
 
+.repo-link {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  margin: 1.5rem 0 0 0;
+  border: 1px solid var(--pink);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  background-image: none; /* cancel the underline-grow effect on main a */
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.repo-link:hover {
+  background: var(--pink-soft);
+}
+
 main canvas {
   max-width: 100%;
   /* p5 sets an inline width/height on the canvas itself (for sharp
