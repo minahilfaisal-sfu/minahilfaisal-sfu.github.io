@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab 03 — Minahil Faisal</title>
+
+  <!-- Three folders deep, so three levels up to the stylesheet -->
+  <link rel="stylesheet" href="../../../style.css">
+
+  <!-- p5.js, version 2.3.3. Every sketch page needs this line. -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.3.3/lib/p5.min.js"></script>
+
+  <!-- p5.sound.js, version 0.4.1. Only needed if you use sound. -->
+  <script src="https://cdn.jsdelivr.net/npm/p5.sound@0.4.1/dist/p5.sound.min.js"></script>
+
+  <!-- Your code. Keep this line last. -->
+  <script src="sketch.js"></script>
+</head>
+<body>
+
+  <header>
+    <a class="site-name" href="../../../index.html">Minahil Faisal</a>
+    <nav>
+      <a href="../../../index.html">Home</a>
+      <a href="../../index.html">Projects</a>
+    </nav>
+  </header>
+
+  <main>
+    <a class="back" href="../index.html">&larr; IAT 806</a>
+
+    <!-- EDIT ME: title and description -->
+    <h1>Lab 03 — Animations</h1>
+    <p class="tagline">This lab explores the creation of animations frame by frame using p5.js.</p>
+
+    <!-- The canvas p5 creates gets placed right here. -->
+    <div id="sketch-holder"></div>
+
+    <h2>Implementation Details</h2>
+    <p>
+      <ul>
+        <li><b>Press the space key to start and stop the animation.</b></li>
+        <li>Created an animation by hand of V (Kim Taehyung) dancing to the song "ON" by BTS.</li>
+        <li>Uploaded an audio clip for this dance break from the original video.</li>
+      </ul>
+
+      <b>On Mouse Click:</b>
+      <ul>
+        <li>The animation starts playing / gets reset.</li>
+        <li>The background music starts playing / gets reset.</li>
+        <li>Canvas border color randomizes on each frame to mimic a disco light effect.</li>
+      </ul>
+
+      <b>On Key Click (Space Bar):</b>
+      <ul>
+        <li>The animation starts pauses / resumes playing.</li>
+        <li>The background music pauses / resumes playing.</li>
+        <li>Canvas border color randomizes on each frame to mimic a disco light effect.</li>
+      </ul>
+    </p>
+
+    <h2>Notes</h2>
+    <p>
+      This lab focuses on for loops, arrays, and loading images to create animations.
+    </p>
+
+    <p>
+      <b>P.S.</b> I actually made this animation in Summer of 2020 because I was obsessed with this
+      song and this fancam. I made this frame by frame (69 frames in total) by handin photoshop when 
+      the original inspo video (KBS Kpop, 2020, 1:35–1:40) first came out.
+      I'm glad I am able to showcase it here now. No AI used in creating the animation.
+    </p>
+
+    <h2>Video and Audio Credits</h2>
+    <p>
+      KBS Kpop. (2020, March 6). <i>[K-Fancam] 방탄소년단 뷔 직캠 'ON' (BTS V Fancam) l @MusicBank 200306</i> [Video]. YouTube. 
+      <a href="https://www.youtube.com/watch?v=SwDlr83g-f8" target="_blank">https://www.youtube.com/watch?v=SwDlr83g-f8</a>
+    </p>
+
+    <a class="link video" href="https://youtu.be/SwDlr83g-f8?si=NLINKJRMNp5sePhQ&t=95" target="_blank">View the Original Video (1:35 - 1:40)</a>
+
+    <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/iat-806/lab-03">View the Codebase</a>
+
+  </main>
+
+  <footer>
+    <p><a href="../index.html">&larr; Back to IAT 806</a></p>
+  </footer>
+
+</body>
+</html>

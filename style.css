@@ -193,7 +193,7 @@ main a:hover, footer a:hover {
 
 .back:hover { color: var(--green); }
 
-.repo-link {
+.link {
   display: inline-block;
   padding: 0.6rem 1.1rem;
   margin: 1.5rem 0 0 0;
@@ -207,11 +207,17 @@ main a:hover, footer a:hover {
   transition: background 0.2s ease;
 }
 
-.repo-link:hover {
+.link:hover {
   background: var(--pink-soft);
 }
 
+.link.video {
+  border-color: var(--green);
+}
+
 main canvas {
+  display: block;
+  margin: 0 auto;
   max-width: 100%;
   /* p5 sets an inline width/height on the canvas itself (for sharp
      rendering on retina screens), which blocks the browser's normal
