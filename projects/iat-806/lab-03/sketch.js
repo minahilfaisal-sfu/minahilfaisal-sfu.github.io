@@ -3,6 +3,7 @@ let music = "";
 let speed = 4;
 let isMusicPlaying = false;
 let startFrame = 0;
+let isAnimationPlaying = true;
 
 const colors = {
   pink: [255, 182, 193],
@@ -72,4 +73,19 @@ function keyPressed() {
     }
     return false; // stop Space from scrolling the page
   }
+
+  // Press X to pause the animation only
+  if (key === "x" || key === "X") {
+    if (isAnimationPlaying) {
+      // stop animation only
+      noLoop();
+      isAnimationPlaying = false;
+    } else {
+      // start animation from where it was paused
+      loop();
+      isAnimationPlaying = true;
+    }
+  }
 }
+
+
