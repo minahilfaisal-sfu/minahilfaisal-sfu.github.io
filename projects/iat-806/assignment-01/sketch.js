@@ -131,8 +131,7 @@ function drawRoomBackground(room, ceilingColor, leftColor, rightColor, floorColo
   rect(left, top, room.w, room.h);
 }
 
-/* ---------- mouse interactions for the door room ----------- */
-
+/* ---------- mouse / key interactions for the rooms ----------- */
 function mousePressed() {
   if (scene === "doors") {
     if (isMouseOverDoor(redDoor)) {
@@ -164,18 +163,159 @@ function keyPressed() {
  * ------------------------------------------------------------
 */
 
+let rooms = [
+  { name: "The Backrooms, Level 0", draw: drawBackrooms },
+  // TODO: add some more rooms
+];
+let chosenDoor;
+let currentRoom;
+let survival = 0;
+let message = "";
+
 function drawLiminalSpace() {
   // create the space background and assets here
+  currentRoom.draw();
+
+  // the screen/lights flicker randomly
+  if (random() < 0.03) {
+    noStroke();
+    fill(0, 170);
+    rect(0, 0, W, H);
+  }
+
+  drawInformationPanel();
 }
 
-
-function enterLiminalSpace(doorUsed) {
+function enterLiminalSpace(door) {
   // set the scene, pick a random liminal space and survival ratings
+  chosenDoor = door;
+  currentRoom = rooms[0];
+
+  survival = floor(random(0, 101));
+  // making a random door deadlier each time
+  deadlierDoor = random("red", "blue");
+  if (door.name === deadlierDoor) {
+    survival = floor(survival * 0.8);
+  }
+  pickMessage();
+
   scene = "liminal-space";
+}
 
+// Creepy messages in the game, depending on the survival rating
+// Based on the liminal space content on insta/youtube and general eerie-ness
+// from the horror books I've read and the fantasy podcasts I've listened to
+let badMessages = [
+  "The floor is damp. You don't know why.",
+  "Something is humming. It isn't the lights.",
+  "You've walked past this spot before. Many times.",
+  "Nobody is coming.",
+];
 
+let okayMessages = [
+  "You found a vending machine. It only takes coins you don't have.",
+  "It's quiet. Too quiet. The only sound is the dull beating of your own heart. Or were those footsteps?",
+  "There's an exit sign. It's very far away.",
+  "There's someone behind you. You'll be fine as long as you don't turn to look."
+];
 
-  fill("black")
-  rect(0, 0, W, H);
-  text("You entered through the", doorUsed.name, "door.")
+let goodMessages = [
+  "You hear a door open somewhere. That's probably good.",
+  "Honestly... it's kind of peaceful here. You can lay down and sleep.",
+  "You brought snacks. You'll be fine. If you run out, you can find a self-serve food truck.",
+  "An entity shows you the way home. You thank them by giving them 10% of your soul."
+];
+
+function pickMessage() {
+  if (survival < 30) {
+    message = random(badMessages);
+  } else if (survival < 70) {
+    message = random(okayMessages);
+  } else {
+    message = random(goodMessages);
+  }
+}
+
+function drawInformationPanel() {
+  // dark panel at the bottom
+  noStroke();
+  fill(0, 210);
+  rect(0, H - 110, W, 110);
+
+  textAlign(LEFT, TOP);
+  fill(255);
+  textSize(18);
+  text(currentRoom.name, 20, H - 98);
+
+  fill(160);
+  textSize(12);
+  text("(you came through the " + chosenDoor.name + " door)", 20, H - 74);
+
+  // survival progess bar - red, yellow, green
+  let barX = 520;
+  let barY = H - 96;
+  let barW = 260;
+  fill(60);
+  rect(barX, barY, barW, 16);
+  if (survival < 30) {
+    fill(220, 50, 50); // red
+  } else if (survival < 70) {
+    fill(230, 190, 50); // yellow
+  } else {
+    fill(70, 200, 100); // green
+  }
+  rect(barX, barY, barW * survival / 100, 16);
+
+  fill(255);
+  textAlign(RIGHT, TOP);
+  textSize(14);
+  text("SURVIVAL " + survival + "%", barX + barW, barY + 22);
+
+  textAlign(LEFT, TOP);
+  fill(220);
+  textSize(14);
+  text(message, 20, H - 50);
+
+  fill(120);
+  textSize(11);
+  text("Press SPACE to go back", 20, H - 22);
+}
+
+/**
+ * -------------------------------
+ * draw the individual rooms
+ * -------------------------------
+*/
+let roomWall = { x: 260, y: 150, w: 280, h: 180 };
+let roomColors = { // shades of yellow for the backrooms
+  ceiling: [210, 200, 140],
+  left: [205, 190, 105],
+  right: [205, 190, 105],
+  floor: [140, 125, 75],
+  back: [220, 205, 115],
+}
+function drawBackrooms() {
+  drawRoomBackground(roomWall, roomColors.ceiling, roomColors.left, roomColors.right, roomColors.floor, roomColors.back);
+
+  // add some wallpaper stripes on the back
+  stroke(185, 170, 95);
+  strokeWeight(1);
+  for (let x = roomWall.x + 14; x < roomWall.x + roomWall.w; x += 14) {
+    line(x, roomWall.y, x, roomWall.y + roomWall.h);
+  }
+
+  // add a door at the back wall
+  noStroke();
+  fill(70, 60, 25);
+  rect(roomWall.x + 170, roomWall.y + 60, 50, 120);
+
+  // draw some ceiling lights, smaller the further away using map
+  noStroke();
+  fill(255, 255, 225);
+  for (let i = 0; i < 4; i++) {
+    let y = map(i, 0, 4, 15, roomWall.y - 8);
+    let w = map(i, 0, 4, 220, roomWall.w / 4);
+    let h = map(i, 0, 4, 28, 6);
+    rect(W / 2 - w / 2, y, w, h);
+  }
 }
