@@ -153,8 +153,8 @@ function keyPressed() {
     }
   }
 
-  // press space to go back
-  if (key === " ") {
+  // press space or escape to go back
+  if (key === " " || key === ESCAPE) {
     scene = "doors";
     return false;
   }
@@ -168,7 +168,7 @@ function keyPressed() {
 let rooms = [
   { name: "The Backrooms, Level 0", draw: drawBackrooms },
   { name: "Office, Everyone Went Home", draw: drawOffice },
-  // TODO: add some more rooms
+  { name: "Empty Pool, After Closing", draw: drawPool },
 ];
 let chosenDoor;
 let currentRoom;
@@ -213,7 +213,8 @@ let badMessages = [
   "The floor is damp. You don't know why.",
   "Something is humming. It isn't the lights.",
   "You've walked past this spot before. Many times.",
-  "Nobody is coming.",
+  "Nobody is coming. Except the entity lurking in the walls.",
+  "There are no windows. You probably wouldn't want to see what's outside anyway."
 ];
 
 let okayMessages = [
@@ -284,7 +285,7 @@ function drawInformationPanel() {
 
   fill(120);
   textSize(11);
-  text("Press SPACE to go back", 20, H - 22);
+  text("Press SPACE or ESC to go back", 20, H - 22);
 }
 
 /**
@@ -374,4 +375,47 @@ function drawOffice() {
     let h = map(i, 0, 4, 28, 6);
     rect(W / 2 - w / 2, y, w, h);
   }
+}
+
+// POOL
+let poolColors = {
+  ceiling: [30, 35, 45],
+  left: [150, 200, 215],
+  right: [150, 200, 215],
+  floor: [110, 180, 210],
+  back: [170, 215, 225],
+}
+function drawPool() {
+  drawRoomBackground(roomWall, poolColors.ceiling, poolColors.left, poolColors.right, poolColors.floor, poolColors.back);
+
+  // draw tile grid on the back wall
+  stroke(120, 170, 190);
+  strokeWeight(1);
+  for (let x = roomWall.x; x <= roomWall.x + roomWall.w; x += 20) {
+    line(x, roomWall.y, x, roomWall.y + roomWall.h);
+  }
+  for (let y = roomWall.y; y <= roomWall.y + roomWall.h; y += 20) {
+    line(roomWall.x, y, roomWall.x + roomWall.w, y);
+  }
+
+  // draw a lane line on the bottom of the empty pool
+  stroke(30, 60, 120);
+  strokeWeight(6);
+  line(W / 2, H, W / 2, roomWall.y + roomWall.h);
+
+  // draw a beach ball
+  noStroke();
+  fill(220, 50, 50);
+  arc(520, 352, 44, 44, PI, TWO_PI);
+  fill(245);
+  arc(520, 352, 44, 44, 0, PI);
+  strokeWeight(1);
+
+  // draw a pink pool ring
+  noStroke()
+  fill(255, 105, 180);
+  ellipse(280, 352, 80, 40);
+  // pool ring hole
+  fill(poolColors.floor);
+  ellipse(280, 352, 60, 20);
 }
