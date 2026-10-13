@@ -39,6 +39,7 @@ let redDoor = {
   color: [150, 25, 35],   // normal color
   glow: [220, 60, 70],  // color when the mouse is over it
   name: "red",
+  deadly: false,
 };
 
 let blueDoor = {
@@ -46,6 +47,7 @@ let blueDoor = {
   color: [25, 50, 150],
   glow: [70, 110, 230],
   name: "blue",
+  deadly: false,
 };
 
 function isMouseOverDoor(door) {
@@ -165,6 +167,7 @@ function keyPressed() {
 
 let rooms = [
   { name: "The Backrooms, Level 0", draw: drawBackrooms },
+  { name: "Office, Everyone Went Home", draw: drawOffice },
   // TODO: add some more rooms
 ];
 let chosenDoor;
@@ -189,12 +192,13 @@ function drawLiminalSpace() {
 function enterLiminalSpace(door) {
   // set the scene, pick a random liminal space and survival ratings
   chosenDoor = door;
-  currentRoom = rooms[0];
+  currentRoom = random(rooms);
 
   survival = floor(random(0, 101));
   // making a random door deadlier each time
-  deadlierDoor = random("red", "blue");
-  if (door.name === deadlierDoor) {
+  deadlierDoor = random(["red", "blue"]);
+  chosenDoor.deadly = (door.name === deadlierDoor);
+  if (chosenDoor.deadly) {
     survival = floor(survival * 0.8);
   }
   pickMessage();
@@ -214,7 +218,7 @@ let badMessages = [
 
 let okayMessages = [
   "You found a vending machine. It only takes coins you don't have.",
-  "It's quiet. Too quiet. The only sound is the dull beating of your own heart. Or were those footsteps?",
+  "The only sound is the dull beating of your own heart. Or were those footsteps?",
   "There's an exit sign. It's very far away.",
   "There's someone behind you. You'll be fine as long as you don't turn to look."
 ];
@@ -249,7 +253,9 @@ function drawInformationPanel() {
 
   fill(160);
   textSize(12);
-  text("(you came through the " + chosenDoor.name + " door)", 20, H - 74);
+
+  let deadlyText = chosenDoor.deadly ? " - deadly" : "";
+  text("(you came through the " + chosenDoor.name + " door)" + deadlyText, 20, H - 74);
 
   // survival progess bar - red, yellow, green
   let barX = 520;
@@ -286,6 +292,8 @@ function drawInformationPanel() {
  * draw the individual rooms
  * -------------------------------
 */
+
+// BACKROOMS
 let roomWall = { x: 260, y: 150, w: 280, h: 180 };
 let roomColors = { // shades of yellow for the backrooms
   ceiling: [210, 200, 140],
@@ -315,6 +323,54 @@ function drawBackrooms() {
   for (let i = 0; i < 4; i++) {
     let y = map(i, 0, 4, 15, roomWall.y - 8);
     let w = map(i, 0, 4, 220, roomWall.w / 4);
+    let h = map(i, 0, 4, 28, 6);
+    rect(W / 2 - w / 2, y, w, h);
+  }
+}
+
+// ABANDONED OFFICE
+let officeWall = { x: 300, y: 110, w: 200, h: 130 };
+let officeColors = { // grays
+  ceiling: [200, 200, 195],
+  left: [170, 170, 165],
+  right: [170, 170, 165],
+  floor: [80, 90, 105],
+  back: [185, 185, 180],
+}
+function drawOffice() {
+  drawRoomBackground(officeWall, officeColors.ceiling, officeColors.left, officeColors.right, officeColors.floor, officeColors.back);
+
+  // draw rows of cubicle walls
+  stroke(60);
+  strokeWeight(1);
+  for (let i = 3; i >= 0; i--) {
+    let bottom = map(i, 0, 4, 385, officeWall.y + officeWall.h + 10);
+    let w = map(i, 0, 4, 420, 220);
+    let h = map(i, 0, 4, 45, 15);
+    fill(120, 125, 140);
+    rect(W / 2 - w / 2, bottom - h, w, h);
+
+    // dividers between cubicles
+    for (let j = 1; j < 4; j++) {
+      let x = W / 2 - w / 2 + (w / 4) * j;
+      line(x, bottom - h, x, bottom);
+    }
+
+    // one computer
+    if (i === 2) {
+      noStroke();
+      fill(120, 200, 255);
+      rect(W / 2 + w / 4 + 8, bottom - h - 14, 22, 14);
+      stroke(60);
+    }
+  }
+
+  // draw some ceiling lights, smaller the further away using map
+  noStroke();
+  fill(255, 255, 225);
+  for (let i = 0; i < 4; i++) {
+    let y = map(i, 0, 4, 15, officeWall.y - 8);
+    let w = map(i, 0, 4, 220, officeWall.w / 4);
     let h = map(i, 0, 4, 28, 6);
     rect(W / 2 - w / 2, y, w, h);
   }
