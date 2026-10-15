@@ -169,11 +169,14 @@ let rooms = [
   { name: "The Backrooms, Level 0", draw: drawBackrooms },
   { name: "Office, Everyone Went Home", draw: drawOffice },
   { name: "Empty Pool, After Closing", draw: drawPool },
+  { name: "The Hallway That Doesn't End", draw: drawHallway },
+  { name: "Playground, 3:07 AM", draw: drawPlayground },
 ];
 let chosenDoor;
 let currentRoom;
 let survival = 0;
 let message = "";
+let stars = [];
 
 function drawLiminalSpace() {
   // create the space background and assets here
@@ -202,6 +205,12 @@ function enterLiminalSpace(door) {
     survival = floor(survival * 0.8);
   }
   pickMessage();
+
+  // pick star positions once, so they don't jump around every frame
+  stars = [];
+  for (let i = 0; i < 50; i++) {
+    stars.push({ x: random(W), y: random(0, 300), size: random(1, 3) });
+  }
 
   scene = "liminal-space";
 }
@@ -418,4 +427,93 @@ function drawPool() {
   // pool ring hole
   fill(poolColors.floor);
   ellipse(280, 352, 60, 20);
+
+  // draw a adder on the back wall
+  stroke(210);
+  strokeWeight(4);
+  let lx = roomWall.x + 40;
+  line(lx, roomWall.y + 10, lx, roomWall.y + 120);
+  line(lx + 30, roomWall.y + 10, lx + 30, roomWall.y + 120);
+  for (let y = roomWall.y + 30; y < roomWall.y + 120; y += 25) {
+    line(lx, y, lx + 30, y);
+  }
+}
+
+function drawHallway() {
+  background(0);
+  stroke(0, 90);
+  strokeWeight(2);
+  rectMode(CENTER);
+ 
+  // frames inside frames, smaller and darker the further they go
+  for (let i = 0; i < 14; i++) {
+    let w = map(i, 0, 14, W + 100, 20);
+    let h = map(i, 0, 14, H + 100, 14);
+    let shade = map(i, 0, 14, 200, 25);
+    if (i % 2 === 0) {
+      fill(shade, shade * 0.95, shade * 0.8);
+    } else {
+      fill(shade * 0.85, shade * 0.8, shade * 0.65);
+    }
+    rect(W / 2, 190, w, h);
+  }
+ 
+  // an exit sign at the very end
+  noStroke();
+  fill(40, 255, 120);
+  rect(W / 2, 176, 14, 5);
+  rectMode(CORNER);
+}
+ 
+function drawPlayground() {
+  background(10, 12, 35);
+ 
+  // stars (their positions were picked in enterRoom)
+  noStroke();
+  fill(255);
+  for (let s of stars) {
+    circle(s.x, s.y, s.size);
+  }
+ 
+  // crescent moon: a light circle with a sky-colored circle on top
+  fill(240, 235, 200);
+  circle(650, 80, 60);
+  fill(10, 12, 35);
+  circle(665, 72, 50);
+ 
+  // ground
+  fill(35, 40, 30);
+  rect(0, 330, W, H - 330);
+ 
+  // slide: ladder, platform and slope
+  stroke(170);
+  strokeWeight(3);
+  line(150, 330, 150, 220);
+  line(175, 330, 175, 220);
+  for (let y = 240; y < 330; y += 20) {
+    line(150, y, 175, y);
+  }
+  fill(160, 60, 60);
+  rect(145, 214, 35, 8);
+  triangle(178, 222, 310, 330, 178, 240);
+ 
+  // swing set frame
+  stroke(150);
+  strokeWeight(4);
+  line(450, 330, 490, 200);
+  line(650, 330, 610, 200);
+  line(490, 200, 610, 200);
+ 
+  // one swing is moving on its own. sin() swings back and forth.
+  let sway = sin(frameCount * 0.04) * 25;
+  strokeWeight(2);
+  fill(90);
+  line(520, 200, 520 + sway, 290);
+  line(545, 200, 545 + sway, 290);
+  rect(515 + sway, 288, 35, 6);
+ 
+  // the other one is perfectly still
+  line(565, 200, 565, 290);
+  line(590, 200, 590, 290);
+  rect(560, 288, 35, 6);
 }
