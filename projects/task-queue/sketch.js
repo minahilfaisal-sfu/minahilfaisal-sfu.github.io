@@ -3,9 +3,10 @@
 // Two views of the same tasks:
 //   Queue — tasks line up; the front one is "next up". Use your own order
 //           (FIFO, drag cards to rearrange), or sort by priority or deadline.
-//   Week  — Monday to Sunday plus a Backlog. Drag a card to another day to
-//           change its deadline. Unfinished tasks from earlier days stay in
-//           their day's box with a LATE tag and their original date.
+//   Week  — Monday to Sunday plus a Backlog, for planning which day to work
+//           on each task. Dragging a card sets its planned day and never
+//           touches the deadline. Unplanned tasks sit on their deadline day.
+//           If a planned day passes, the card stays there with a LATE tag.
 //   Calendar — a month grid. Arrows move between months; drag a task chip
 //           to any day (or to the Undated tray) to reschedule it.
 
@@ -106,12 +107,16 @@ let tray = null;      // the Undated tray under the calendar
 let calButtons = [];  // the ‹ Today › buttons
 
 class Task {
-  // due is a "YYYY-MM-DD" string, or null for no deadline
-  constructor(text, priority, due, startX, startY) {
+  // due: the deadline, a "YYYY-MM-DD" string or null.
+  // planned: the day you plan to work on it (week view only) — a
+  // "YYYY-MM-DD" string, "backlog" if moved to the backlog, or null if
+  // never planned (then the week view uses the deadline instead).
+  constructor(text, priority, due, startX, startY, planned = null) {
     this.id = nextId++;
     this.text = text;
     this.priority = PRIORITIES[priority] ? priority : "medium";
     this.due = due || null;
+    this.planned = planned || null;
     this.x = startX;
     this.y = startY;
     this.w = CARD_W;  // current size, eased between views
@@ -129,6 +134,19 @@ class Task {
   isOverdue() {
     const days = this.daysLeft();
     return days !== null && days < 0;
+  }
+
+  // The day this task sits on in the week view: its planned day, or its
+  // deadline if it hasn't been planned. null = backlog.
+  weekDate() {
+    if (this.planned === "backlog") return null;
+    return this.planned || this.due;
+  }
+
+  // Has its day in the week view already passed?
+  isPlanLate() {
+    const key = this.weekDate();
+    return key !== null && parseDate(key) < today();
   }
 
   // Ease toward a spot on the canvas and fade in
@@ -258,7 +276,8 @@ class Task {
   // showDate: whether line 2 should spell out the date (backlog, late tasks)
   showWeek(hovered, hoverCheck, lifted, showDate, hoverEdit = false) {
     const done = this.doneTimer >= 0;
-    const late = this.isOverdue() && !done;
+    const late = this.isPlanLate() && !done;     // its day has passed
+    const overdue = this.isOverdue() && !done;   // its deadline has passed
     const p = PRIORITIES[this.priority];
     const a = constrain(this.alpha, 0, 255);
     const w = this.w;
@@ -281,7 +300,7 @@ class Task {
       stroke(...colors.green, a);
     } else {
       fill(...colors.raised, a);
-      stroke(...(late ? colors.pink : hovered || lifted ? colors.muted : colors.line), a);
+      stroke(...(late || overdue ? colors.pink : hovered || lifted ? colors.muted : colors.line), a);
     }
     rect(0, 0, w, h, 9);
 
@@ -317,18 +336,34 @@ class Task {
     // Line 2: priority pill, then the date when it's useful
     const metaY = cy + 11;
     const pillW = drawPill(p.label, textX, metaY, 10, p.soft, p.color, a, "left");
+    // The deadline is always shown, since the box is the planned day
     let dateText = null;
     let dateColor = colors.muted;
-    if (late) {
-      dateText = "Was due " + longDate(parseDate(this.due));
+    let bold = false;
+    const dueShort = this.due ? shortDate(parseDate(this.due)) : null;
+    if (late && this.planned) {
+      // Missed plan: show the day it was planned for, plus the deadline
+      dateText = "Planned " + shortDate(parseDate(this.planned)) + (this.due ? " · due " + dueShort : "");
       dateColor = colors.pink;
-    } else if (showDate && this.due) {
-      dateText = "Due " + longDate(parseDate(this.due));
+      bold = true;
+    } else if (this.due) {
+      const days = this.daysLeft();
+      if (days < 0) {
+        dateText = "Was due " + longDate(parseDate(this.due));
+        dateColor = colors.pink;
+        bold = true;
+      } else if (days === 0) {
+        dateText = "Due today";
+        dateColor = colors.amber;
+        bold = true;
+      } else {
+        dateText = "Due " + longDate(parseDate(this.due));
+      }
     }
     if (dateText) {
       textAlign(LEFT, CENTER);
       textSize(11);
-      textStyle(late ? BOLD : NORMAL);
+      textStyle(bold ? BOLD : NORMAL);
       fill(...(done ? colors.green : dateColor), a);
       text(fitText(dateText, w - textX - pillW - 40), textX + pillW + 8, metaY + 1);
     }
@@ -556,10 +591,18 @@ function layoutWeek() {
 
   for (const task of queue) boxes[boxIndexFor(task, start)].tasks.push(task);
 
-  // Inside a box: earliest date first (so late carry-overs sit on top),
-  // then priority, then arrival
+  // Inside a box: earliest day first (so late carry-overs sit on top),
+  // then deadline, then priority, then arrival
+  const byWeekDate = (a, b) => {
+    const ka = a.weekDate();
+    const kb = b.weekDate();
+    if (ka === kb) return 0;
+    if (!ka) return 1;
+    if (!kb) return -1;
+    return ka < kb ? -1 : 1;
+  };
   for (const box of boxes) {
-    box.tasks.sort((a, b) => byDeadline(a, b) || byPriority(a, b) || a.id - b.id);
+    box.tasks.sort((a, b) => byWeekDate(a, b) || byDeadline(a, b) || byPriority(a, b) || a.id - b.id);
   }
 
   let y = WEEK_TOP;
@@ -578,13 +621,14 @@ function layoutWeek() {
   return boxes;
 }
 
-// Which box a task belongs in this week
+// Which box a task belongs in this week (by planned day, else deadline)
 function boxIndexFor(task, start) {
-  if (!task.due) return BACKLOG;
-  const due = parseDate(task.due);
-  if (due > addDays(start, 6)) return BACKLOG; // after this Sunday
+  const key = task.weekDate();
+  if (!key) return BACKLOG;
+  const day = parseDate(key);
+  if (day > addDays(start, 6)) return BACKLOG; // after this Sunday
   // This week, or late from an earlier week: its own weekday's box
-  return (due.getDay() + 6) % 7; // Monday = 0 … Sunday = 6
+  return (day.getDay() + 6) % 7; // Monday = 0 … Sunday = 6
 }
 
 function drawBox(box, isDropTarget) {
@@ -617,7 +661,7 @@ function drawBox(box, isDropTarget) {
   textStyle(NORMAL);
   textSize(13);
   fill(...colors.muted);
-  const sub = box.date ? "· " + shortDate(box.date) : "· undated & later";
+  const sub = box.date ? "· " + shortDate(box.date) : "· not planned this week";
   text(sub, 14 + nameW + 6, 22);
 
   // Right side: TODAY tag or task count
@@ -1110,11 +1154,11 @@ function queueDropIndex() {
   return constrain(Math.round((dragging.task.y - LIST_TOP) / (CARD_H + GAP)), 0, last);
 }
 
-function enqueue(text, priority, due) {
+function enqueue(text, priority, due, planned = null) {
   const clean = text.trim();
   if (!clean) return;
   // Start just below the back of the queue so it slides in
-  queue.push(new Task(clean, priority, due, MARGIN_X, slotY(queue.length) + 24));
+  queue.push(new Task(clean, priority, due, MARGIN_X, slotY(queue.length) + 24, planned));
   saveQueue();
 }
 
@@ -1237,7 +1281,8 @@ function mouseReleased() {
 
   const target = boxAt(mouseX, mouseY);
   if (target >= 0 && target !== dragging.fromBox) {
-    dragging.task.due = target === BACKLOG ? null : dateKey(weekBoxes[target].date);
+    // Planning only: the deadline stays as it is
+    dragging.task.planned = target === BACKLOG ? "backlog" : dateKey(weekBoxes[target].date);
     saveQueue();
   }
   // Otherwise it just eases back to where it was
@@ -1381,7 +1426,7 @@ function applyView() {
   document.getElementById("order-control").style.display = view === "queue" ? "" : "none";
   const hints = {
     queue: "Drag a task to move it &middot; &#10003; marks it done &middot; the pencil edits it &middot; saved in this browser.",
-    week: "Drag cards between days to reschedule &middot; tick the circle to mark one done &middot; the pencil edits it.",
+    week: "Drag cards to plan which day to work on them (deadlines stay put) &middot; tick the circle to mark one done &middot; the pencil edits it.",
     calendar: "Drag tasks between days to reschedule &middot; tick the circle to mark one done &middot; double-click to edit."
   };
   document.getElementById("hint").innerHTML = hints[view];
@@ -1450,7 +1495,7 @@ function saveQueue() {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        tasks: queue.map((t) => ({ text: t.text, priority: t.priority, due: t.due })),
+        tasks: queue.map((t) => ({ text: t.text, priority: t.priority, due: t.due, planned: t.planned })),
         doneCount,
         orderBy,
         view
@@ -1471,7 +1516,7 @@ function loadQueue() {
     for (const t of data.tasks || []) {
       // Older saves stored plain strings
       if (typeof t === "string") enqueue(t, "medium", null);
-      else enqueue(t.text, t.priority, t.due);
+      else enqueue(t.text, t.priority, t.due, t.planned);
     }
   } catch (e) {
     // Nothing saved, or storage unavailable
