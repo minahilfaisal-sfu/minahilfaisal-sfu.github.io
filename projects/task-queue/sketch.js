@@ -51,12 +51,12 @@ const MARGIN_X = 60;
 const CONTENT_W = 680;
 
 // --- Layout: queue view ---
-const QUEUE_H = 720;
+const QUEUE_MIN_H = 460; // the queue canvas grows past this as tasks are added
 const CARD_W = CONTENT_W;
 const CARD_H = 60;
 const GAP = 10;
 const LIST_TOP = 120;
-const MAX_VISIBLE = 8;
+const BTN_D = 30;       // round ✓ / edit buttons on queue cards
 
 // --- Layout: week view ---
 const WEEK_TOP = 110;
@@ -163,8 +163,22 @@ class Task {
     return dist(px, py, this.x + CHECK_X, this.y + WCARD_H / 2) < 13;
   }
 
+  // Queue view: which round button (if any) is at this point
+  queueButtonAt(px, py) {
+    const cy = this.y + CARD_H / 2;
+    if (dist(px, py, this.x + this.w - 30, cy) < BTN_D / 2 + 2) return "check";
+    if (dist(px, py, this.x + this.w - 68, cy) < BTN_D / 2 + 2) return "edit";
+    return null;
+  }
+
+  // Week view: the little pencil in the bottom-right corner
+  onWeekEdit(px, py) {
+    return dist(px, py, this.x + this.w - 18, this.y + WCARD_H - 15) < 11;
+  }
+
   // ----- Queue view card -----
-  show(position, hovered) {
+  // hoverBtn: "check" | "edit" | null — which button the mouse is over
+  show(position, hovered, hoverBtn = null) {
     const done = this.doneTimer >= 0;
     const front = position === 0 && !done;
     const overdue = this.isOverdue() && !done;
@@ -206,11 +220,16 @@ class Task {
       text(position + 1, cx, cy + 1);
     }
 
-    // "NEXT UP" / "DONE" label on the right
-    let labelW = 0;
-    if (front || done) {
-      labelW = drawPill(done ? "DONE" : "NEXT UP", w - 14, cy, 11,
-        done ? colors.green : colors.pinkSoft, done ? colors.raised : colors.pink, a, "right");
+    // Right side: ✓ and edit buttons, with "NEXT UP" beside them.
+    // Once done, just a "DONE" label.
+    let rightW = 30;
+    if (done) {
+      rightW += drawPill("DONE", w - 14, cy, 11, colors.green, colors.raised, a, "right");
+    } else {
+      drawIconButton(w - 30, cy, "check", hoverBtn === "check", a);
+      drawIconButton(w - 68, cy, "edit", hoverBtn === "edit", a);
+      rightW = 96;
+      if (front) rightW += drawPill("NEXT UP", w - 96, cy, 11, colors.pinkSoft, colors.pink, a, "right") + 10;
     }
 
     // Line 1: task text
@@ -218,7 +237,7 @@ class Task {
     const titleY = cy - 9;
     textSize(16);
     textStyle(NORMAL);
-    drawTitle(this.text, textX, titleY, w - textX - labelW - 30, done, a);
+    drawTitle(this.text, textX, titleY, w - textX - rightW - 10, done, a);
 
     // Line 2: priority pill, then the deadline
     const metaY = cy + 13;
@@ -237,7 +256,7 @@ class Task {
 
   // ----- Week view card -----
   // showDate: whether line 2 should spell out the date (backlog, late tasks)
-  showWeek(hovered, hoverCheck, lifted, showDate) {
+  showWeek(hovered, hoverCheck, lifted, showDate, hoverEdit = false) {
     const done = this.doneTimer >= 0;
     const late = this.isOverdue() && !done;
     const p = PRIORITIES[this.priority];
@@ -311,7 +330,17 @@ class Task {
       textSize(11);
       textStyle(late ? BOLD : NORMAL);
       fill(...(done ? colors.green : dateColor), a);
-      text(fitText(dateText, w - textX - pillW - 18), textX + pillW + 8, metaY + 1);
+      text(fitText(dateText, w - textX - pillW - 40), textX + pillW + 8, metaY + 1);
+    }
+
+    // Pencil in the bottom-right corner opens the editor
+    if (!done && !lifted) {
+      if (hoverEdit) {
+        noStroke();
+        fill(...colors.pinkSoft, a);
+        circle(w - 18, h - 15, 22);
+      }
+      drawPencil(w - 18, h - 15, 0.9, hoverEdit ? colors.pink : hovered ? colors.ink : colors.muted, a * (hovered ? 1 : 0.6));
     }
 
     pop();
@@ -391,7 +420,7 @@ class Task {
 // ---------------------------------------------------------------
 
 function setup() {
-  const canvas = createCanvas(CANVAS_W, QUEUE_H);
+  const canvas = createCanvas(CANVAS_W, QUEUE_MIN_H);
   canvas.parent("sketch-holder");
   canvas.mousePressed(handleCanvasPress);
   textFont("Helvetica");
@@ -399,6 +428,7 @@ function setup() {
   calMonth = monthStart(today());
   loadQueue();
   wireUpControls();
+  wireUpEditor();
   applyView();
 }
 
@@ -421,7 +451,9 @@ function draw() {
 // Queue view
 
 function drawQueueView() {
-  if (height !== QUEUE_H) resizeCanvas(CANVAS_W, QUEUE_H);
+  // The canvas grows with the queue so every task is visible
+  const neededH = max(QUEUE_MIN_H, slotY(queue.length) + 20);
+  if (height !== neededH) resizeCanvas(CANVAS_W, neededH);
   background(...colors.paper);
 
   // While a card is dragged, the others shuffle to make room for it
@@ -429,23 +461,25 @@ function drawQueueView() {
   const ordered = dragged ? previewOrder() : orderedQueue();
   drawHeader(queue.length + (queue.length === 1 ? " task" : " tasks") + " in the queue");
 
-  // Find the hovered card (only among visible, waiting tasks)
+  // Find the hovered card, and whether the mouse is on one of its buttons
   let hoveredIndex = -1;
+  let hoverBtn = null;
   if (!dragged) {
-    for (let i = 0; i < min(ordered.length, MAX_VISIBLE); i++) {
+    for (let i = 0; i < ordered.length; i++) {
       if (ordered[i].contains(mouseX, mouseY)) {
         hoveredIndex = i;
+        hoverBtn = ordered[i].queueButtonAt(mouseX, mouseY);
         break;
       }
     }
   }
-  cursor(dragged ? "grabbing" : hoveredIndex >= 0 ? HAND : ARROW);
+  cursor(dragged ? "grabbing" : hoverBtn ? HAND : hoveredIndex >= 0 ? "grab" : ARROW);
 
   // Waiting tasks — each eases toward its slot, so re-sorting animates
   for (let i = 0; i < ordered.length; i++) {
     if (ordered[i] === dragged) continue;
     ordered[i].update(MARGIN_X, slotY(i), CARD_W, CARD_H);
-    if (i < MAX_VISIBLE) ordered[i].show(i, i === hoveredIndex);
+    ordered[i].show(i, i === hoveredIndex, i === hoveredIndex ? hoverBtn : null);
   }
 
   // The dragged card, lifted above the rest
@@ -456,17 +490,6 @@ function drawQueueView() {
     fill(...colors.ink, 28);
     rect(dragged.x + 3, dragged.y + 7, CARD_W, CARD_H, 10);
     dragged.show(dragging.index, true);
-  }
-
-  // Overflow note
-  if (ordered.length > MAX_VISIBLE) {
-    noStroke();
-    fill(...colors.muted);
-    textAlign(CENTER, CENTER);
-    textSize(14);
-    textStyle(ITALIC);
-    text("+ " + (ordered.length - MAX_VISIBLE) + " more waiting", MARGIN_X + CARD_W / 2, slotY(MAX_VISIBLE) + 14);
-    textStyle(NORMAL);
   }
 
   if (queue.length === 0 && leaving.length === 0) drawEmptyState(LIST_TOP + 180);
@@ -503,7 +526,8 @@ function drawWeekView() {
       task.update(box.x + BOX_PAD, box.y + BOX_HEAD + j * (WCARD_H + WCARD_GAP), WCARD_W, WCARD_H);
       const isHover = !dragging && task.contains(mouseX, mouseY);
       if (isHover) hovered = task;
-      task.showWeek(isHover, isHover && task.onCheck(mouseX, mouseY), false, box.index === BACKLOG);
+      task.showWeek(isHover, isHover && task.onCheck(mouseX, mouseY), false, box.index === BACKLOG,
+        isHover && task.onWeekEdit(mouseX, mouseY));
     });
   }
 
@@ -515,7 +539,7 @@ function drawWeekView() {
     t.showWeek(false, false, true, true);
     cursor("grabbing");
   } else if (hovered) {
-    cursor(hovered.onCheck(mouseX, mouseY) ? HAND : "grab");
+    cursor(hovered.onCheck(mouseX, mouseY) || hovered.onWeekEdit(mouseX, mouseY) ? HAND : "grab");
   } else {
     cursor(ARROW);
   }
@@ -860,7 +884,7 @@ function drawTooltip(task) {
   textStyle(NORMAL);
   textSize(11);
   const w = max(titleW, textWidth(meta)) + 24;
-  const h = 46;
+  const h = 62;
   const x = constrain(mouseX + 14, 4, width - w - 4);
   let y = mouseY + 18;
   if (y + h > height - 4) y = mouseY - h - 10;
@@ -877,6 +901,8 @@ function drawTooltip(task) {
   textSize(11);
   fill(...(task.isOverdue() ? colors.pinkSoft : colors.line));
   text(meta, x + 12, y + 32);
+  fill(...colors.muted);
+  text("Double-click to edit", x + 12, y + 48);
 }
 
 function insideRect(px, py, r) {
@@ -955,6 +981,44 @@ function drawEmptyState(cy) {
     textSize(14);
     text("Add a task above, or load the sample set.", cx, cy + 26);
   }
+}
+
+// Round button on queue cards: kind is "check" or "edit"
+function drawIconButton(cx, cy, kind, hover, a) {
+  const accent = kind === "check" ? colors.green : colors.pink;
+  const soft = kind === "check" ? colors.greenSoft : colors.pinkSoft;
+  strokeWeight(1);
+  stroke(...(hover ? accent : colors.line), a);
+  fill(...(hover ? soft : colors.paper), a);
+  circle(cx, cy, BTN_D);
+  if (kind === "check") {
+    stroke(...(hover ? accent : colors.muted), a);
+    strokeWeight(2);
+    noFill();
+    beginShape();
+    vertex(cx - 6, cy);
+    vertex(cx - 1.5, cy + 4.5);
+    vertex(cx + 6.5, cy - 4.5);
+    endShape();
+  } else {
+    drawPencil(cx, cy, 1, hover ? accent : colors.muted, a);
+  }
+  noStroke();
+}
+
+// A small pencil icon, drawn at an angle
+function drawPencil(cx, cy, s, c, a) {
+  push();
+  translate(cx, cy);
+  rotate(-QUARTER_PI);
+  stroke(...c, a);
+  strokeWeight(1.4);
+  noFill();
+  rect(-3 * s, -2.2 * s, 9 * s, 4.4 * s, 0.8);
+  line(3.5 * s, -2.2 * s, 3.5 * s, 2.2 * s);
+  fill(...c, a);
+  triangle(-3 * s, -2.2 * s, -3 * s, 2.2 * s, -6.5 * s, 0);
+  pop();
 }
 
 // A filled circle with a tick in it
@@ -1042,7 +1106,7 @@ function previewOrder() {
 
 // Which slot the dragged card is hovering over (kept to the visible slots)
 function queueDropIndex() {
-  const last = min(queue.length, MAX_VISIBLE) - 1;
+  const last = queue.length - 1;
   return constrain(Math.round((dragging.task.y - LIST_TOP) / (CARD_H + GAP)), 0, last);
 }
 
@@ -1050,7 +1114,7 @@ function enqueue(text, priority, due) {
   const clean = text.trim();
   if (!clean) return;
   // Start just below the back of the queue so it slides in
-  queue.push(new Task(clean, priority, due, MARGIN_X, slotY(min(queue.length, MAX_VISIBLE)) + 24));
+  queue.push(new Task(clean, priority, due, MARGIN_X, slotY(queue.length) + 24));
   saveQueue();
 }
 
@@ -1069,13 +1133,16 @@ function completeTask(task) {
 
 function handleCanvasPress() {
   if (view === "queue") {
-    // Don't decide yet: a click completes the task, a drag moves it
+    // ✓ completes, the pencil edits, anywhere else on the card can be dragged
     const ordered = orderedQueue();
-    for (let i = 0; i < min(ordered.length, MAX_VISIBLE); i++) {
-      if (ordered[i].contains(mouseX, mouseY)) {
-        pressed = { task: ordered[i], index: i, x: mouseX, y: mouseY };
-        return;
-      }
+    for (let i = 0; i < ordered.length; i++) {
+      const task = ordered[i];
+      if (!task.contains(mouseX, mouseY)) continue;
+      const btn = task.queueButtonAt(mouseX, mouseY);
+      if (btn === "check") completeTask(task);
+      else if (btn === "edit") openEditor(task);
+      else pressed = { task, index: i, x: mouseX, y: mouseY };
+      return;
     }
     return;
   }
@@ -1105,6 +1172,8 @@ function handleCanvasPress() {
       if (!task.contains(mouseX, mouseY)) continue;
       if (task.onCheck(mouseX, mouseY)) {
         completeTask(task);
+      } else if (task.onWeekEdit(mouseX, mouseY)) {
+        openEditor(task);
       } else {
         dragging = { task, dx: mouseX - task.x, dy: mouseY - task.y, fromBox: box.index };
       }
@@ -1123,7 +1192,7 @@ function mouseDragged() {
   if (!dragging) return;
 
   if (dragging.queueDrag) {
-    dragging.task.y = constrain(mouseY - dragging.dy, LIST_TOP - 20, slotY(MAX_VISIBLE - 1) + 20);
+    dragging.task.y = constrain(mouseY - dragging.dy, LIST_TOP - 20, slotY(queue.length - 1) + 20);
     dragging.index = queueDropIndex();
     return;
   }
@@ -1132,9 +1201,9 @@ function mouseDragged() {
 }
 
 function mouseReleased() {
-  // Queue view: pressed and released without dragging = done
+  // Queue view: pressed and released without dragging — nothing happens
+  // (tasks only complete from the ✓ button, so stray clicks are harmless)
   if (pressed) {
-    completeTask(pressed.task);
     pressed = null;
     return;
   }
@@ -1173,6 +1242,84 @@ function mouseReleased() {
   }
   // Otherwise it just eases back to where it was
   dragging = null;
+}
+
+// Double-click any task (in any view) to edit it — the only way in for
+// calendar chips, which are too small for an edit button
+function doubleClicked() {
+  if (dragging) return;
+  const task = queue.find((t) => t.contains(mouseX, mouseY));
+  if (task) {
+    pressed = null;
+    openEditor(task);
+  }
+}
+
+// ---------------------------------------------------------------
+// Edit dialog (plain HTML <dialog> in index.html)
+
+let editingTask = null;
+
+function openEditor(task) {
+  editingTask = task;
+  pressed = null;
+  dragging = null;
+  document.getElementById("edit-text").value = task.text;
+  document.getElementById("edit-priority").value = task.priority;
+  document.getElementById("edit-due").value = task.due || "";
+  resetDeleteButton();
+  document.getElementById("edit-dialog").showModal();
+  document.getElementById("edit-text").select();
+}
+
+function closeEditor() {
+  editingTask = null;
+  document.getElementById("edit-dialog").close();
+}
+
+function resetDeleteButton() {
+  const del = document.getElementById("edit-delete");
+  del.textContent = "Delete";
+  del.dataset.armed = "";
+}
+
+function wireUpEditor() {
+  const dialog = document.getElementById("edit-dialog");
+
+  document.getElementById("edit-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = document.getElementById("edit-text").value.trim();
+    if (!editingTask || !text) return;
+    editingTask.text = text;
+    editingTask.priority = document.getElementById("edit-priority").value;
+    editingTask.due = document.getElementById("edit-due").value || null;
+    saveQueue();
+    closeEditor();
+  });
+
+  document.getElementById("edit-cancel").addEventListener("click", closeEditor);
+
+  document.getElementById("edit-clear-due").addEventListener("click", () => {
+    document.getElementById("edit-due").value = "";
+  });
+
+  // Delete takes two clicks, so it can't happen by accident.
+  // Deleting removes the task without counting it as done.
+  document.getElementById("edit-delete").addEventListener("click", (e) => {
+    const del = e.currentTarget;
+    if (!del.dataset.armed) {
+      del.dataset.armed = "yes";
+      del.textContent = "Click again to delete";
+      return;
+    }
+    queue = queue.filter((t) => t !== editingTask);
+    saveQueue();
+    closeEditor();
+  });
+
+  dialog.addEventListener("close", () => {
+    editingTask = null;
+  });
 }
 
 // ---------------------------------------------------------------
@@ -1233,9 +1380,9 @@ function applyView() {
   }
   document.getElementById("order-control").style.display = view === "queue" ? "" : "none";
   const hints = {
-    queue: "Drag a task to move it in the queue &middot; click to mark it done &middot; saved in this browser.",
-    week: "Drag cards between days to reschedule &middot; tick the circle to mark one done.",
-    calendar: "Drag tasks between days to reschedule &middot; hover for details &middot; tick the circle to mark one done."
+    queue: "Drag a task to move it &middot; &#10003; marks it done &middot; the pencil edits it &middot; saved in this browser.",
+    week: "Drag cards between days to reschedule &middot; tick the circle to mark one done &middot; the pencil edits it.",
+    calendar: "Drag tasks between days to reschedule &middot; tick the circle to mark one done &middot; double-click to edit."
   };
   document.getElementById("hint").innerHTML = hints[view];
 }

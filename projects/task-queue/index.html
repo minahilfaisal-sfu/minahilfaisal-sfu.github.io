@@ -66,7 +66,8 @@
       flex: none;
     }
 
-    .controls button {
+    .controls button,
+    dialog .actions button {
       padding: 0.6rem 1rem;
       font: inherit;
       font-size: 0.95rem;
@@ -78,9 +79,12 @@
       transition: background 0.2s ease, border-color 0.2s ease;
     }
 
-    .controls button:hover { border-color: var(--muted); }
-    .controls button.primary { border-color: var(--pink); }
-    .controls button.primary:hover { background: var(--pink-soft); }
+    .controls button:hover,
+    dialog .actions button:hover { border-color: var(--muted); }
+    .controls button.primary,
+    dialog .actions button.primary { border-color: var(--pink); }
+    .controls button.primary:hover,
+    dialog .actions button.primary:hover { background: var(--pink-soft); }
     .controls button.done { border-color: var(--green); }
     .controls button.done:hover { background: var(--green-soft); }
 
@@ -109,6 +113,51 @@
     .view-toggle button.active {
       background: var(--pink-soft);
       color: var(--ink);
+    }
+
+    /* Edit dialog */
+    dialog {
+      width: min(28rem, calc(100vw - 2rem));
+      padding: 1.5rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 20px 50px -20px rgba(43, 36, 32, 0.45);
+    }
+
+    dialog::backdrop {
+      background: rgba(43, 36, 32, 0.3);
+    }
+
+    dialog h2 { margin: 0 0 1rem; }
+
+    dialog .controls { margin-bottom: 0.9rem; }
+
+    dialog .actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+
+    dialog .actions .spacer { flex: 1; }
+
+    dialog button.danger {
+      color: var(--pink);
+      border-color: transparent;
+      background: none;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    dialog button.danger:hover {
+      border-color: transparent;
+      text-decoration: underline;
+    }
+
+    dialog button.small {
+      padding: 0.4rem 0.7rem;
+      font-size: 0.85rem;
     }
 
     .hint {
@@ -184,13 +233,45 @@
     <div id="sketch-holder"></div>
     <p class="hint" id="hint">Click any task to mark it done &middot; your queue is saved in this browser.</p>
 
+    <!-- Edit dialog, opened from a task's pencil (or by double-clicking it) -->
+    <dialog id="edit-dialog">
+      <form id="edit-form" autocomplete="off">
+        <h2>Edit task</h2>
+        <div class="controls">
+          <input id="edit-text" type="text" maxlength="80" required aria-label="Task">
+        </div>
+        <div class="controls">
+          <label>
+            Priority
+            <select id="edit-priority">
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+          <label>
+            Deadline
+            <input id="edit-due" type="date">
+          </label>
+          <button type="button" id="edit-clear-due" class="small">No deadline</button>
+        </div>
+        <div class="actions">
+          <button type="button" id="edit-delete" class="danger">Delete</button>
+          <span class="spacer"></span>
+          <button type="button" id="edit-cancel">Cancel</button>
+          <button type="submit" class="primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
     <h2>Notes</h2>
     <p>
       A first-in, first-out queue drawn with p5.js. New tasks join at the
       back, the one at the front is marked &ldquo;next up&rdquo;, and finishing
       a task sends it off the canvas while everything behind it slides forward.
-      The bar at the top fills as the queue empties. Drag a card up or down
-      to move it to a different place in line.
+      The bar at the top fills as the queue empties, and the list grows as
+      tasks are added. Drag a card up or down to move it to a different place
+      in line; the &#10003; button marks it done and the pencil opens an editor.
     </p>
     <p>
       Each task can have a priority and a deadline. Switching &ldquo;Order by&rdquo;
