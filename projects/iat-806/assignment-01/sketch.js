@@ -141,6 +141,8 @@ function mousePressed() {
     } else if (isMouseOverDoor(blueDoor)) {
       enterLiminalSpace(blueDoor);
     }
+  } else {
+    callForHelp();
   }
 }
 
@@ -177,6 +179,16 @@ let currentRoom;
 let survival = 0;
 let message = "";
 let stars = [];
+
+function callForHelp() {
+  // only count clicks that land on the canvas
+  if (mouseX < 0 || mouseX > width || mouseY < 0 || mouseY > height) {
+    return;
+  }
+  // calling for help might help... or might not (-15 to +10)
+  survival = constrain(survival + floor(random(-15, 11)), 0, 100);
+  pickMessage();
+}
 
 function drawLiminalSpace() {
   // create the space background and assets here
