@@ -26,6 +26,7 @@ function draw() {
   for (let ball of balls) {
     ball.move();
     ball.show();
+    ball.changeSize();
   }
 }
 
@@ -46,5 +47,9 @@ class Ball {
   move() {
     this.x += random(-5, 5);
     this.y += random(-5, 5);
+  }
+
+  changeSize() {
+    this.r += random(-5, 5);
   }
 }

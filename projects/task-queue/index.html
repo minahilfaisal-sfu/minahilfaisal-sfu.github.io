@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task Queue — Minahil Faisal</title>
+
+  <!-- Two folders deep (projects/task-queue/), so two levels up -->
+  <link rel="stylesheet" href="../../style.css">
+
+  <!-- Styles just for this page: the add-task form and buttons -->
+  <style>
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 0 0 1.25rem;
+    }
+
+    .controls input {
+      flex: 1 1 16rem;
+      min-width: 0;
+      padding: 0.6rem 0.9rem;
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .controls input:focus,
+    .controls select:focus { border-color: var(--pink); }
+
+    /* Second line of the add form: priority, deadline, add button */
+    .controls .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      flex: 1 1 100%;
+    }
+
+    .controls .row button { margin-left: auto; }
+
+    .controls label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .controls select,
+    .controls input[type="date"] {
+      padding: 0.55rem 0.7rem;
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      outline: none;
+      flex: none;
+    }
+
+    .controls button {
+      padding: 0.6rem 1rem;
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .controls button:hover { border-color: var(--muted); }
+    .controls button.primary { border-color: var(--pink); }
+    .controls button.primary:hover { background: var(--pink-soft); }
+    .controls button.done { border-color: var(--green); }
+    .controls button.done:hover { background: var(--green-soft); }
+
+    /* Queue / Week switch */
+    .view-toggle {
+      display: inline-flex;
+      padding: 3px;
+      margin: 0 0 1rem;
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .view-toggle button {
+      padding: 0.45rem 1.1rem;
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .view-toggle button.active {
+      background: var(--pink-soft);
+      color: var(--ink);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0.75rem 0 0;
+      text-align: center;
+    }
+  </style>
+
+  <!-- p5.js, version 2.3.3 -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.3.3/lib/p5.min.js"></script>
+
+  <!-- The sketch. Keep this line last. -->
+  <script src="sketch.js"></script>
+</head>
+<body>
+
+  <header>
+    <a class="site-name" href="../../index.html">Minahil Faisal</a>
+    <nav>
+      <a href="../../index.html">Home</a>
+      <a href="../index.html">Projects</a>
+    </nav>
+  </header>
+
+  <main>
+    <a class="back" href="../index.html">&larr; Projects</a>
+
+    <h1>Task Queue</h1>
+    <p class="tagline">Line tasks up, plan your week and month, and watch the queue shrink.</p>
+
+    <form class="controls" id="add-form" autocomplete="off">
+      <input id="task-input" type="text" maxlength="80" placeholder="What needs doing?">
+      <div class="row">
+        <label>
+          Priority
+          <select id="task-priority">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <label>
+          Deadline
+          <input id="task-due" type="date">
+        </label>
+        <button type="submit" class="primary">Add to queue</button>
+      </div>
+    </form>
+
+    <div class="controls">
+      <label id="order-control">
+        Order by
+        <select id="order-by">
+          <option value="manual">My order</option>
+          <option value="priority">Priority</option>
+          <option value="deadline">Deadline</option>
+        </select>
+      </label>
+      <button type="button" id="complete-next" class="done">Complete next</button>
+      <button type="button" id="load-samples">Load sample tasks</button>
+      <button type="button" id="clear-all">Clear all</button>
+    </div>
+
+    <div class="view-toggle">
+      <button type="button" data-view="queue" class="active">Queue</button>
+      <button type="button" data-view="week">Week</button>
+      <button type="button" data-view="calendar">Calendar</button>
+    </div>
+
+    <!-- The canvas p5 creates gets placed right here. -->
+    <div id="sketch-holder"></div>
+    <p class="hint" id="hint">Click any task to mark it done &middot; your queue is saved in this browser.</p>
+
+    <h2>Notes</h2>
+    <p>
+      A first-in, first-out queue drawn with p5.js. New tasks join at the
+      back, the one at the front is marked &ldquo;next up&rdquo;, and finishing
+      a task sends it off the canvas while everything behind it slides forward.
+      The bar at the top fills as the queue empties. Drag a card up or down
+      to move it to a different place in line.
+    </p>
+    <p>
+      Each task can have a priority and a deadline. Switching &ldquo;Order by&rdquo;
+      to Priority or Deadline turns it into a priority queue: the tasks
+      re-sort themselves, and &ldquo;next up&rdquo; becomes whatever matters most
+      rather than whatever arrived first. Overdue tasks are flagged in pink.
+    </p>
+    <p>
+      The Week view lays the same tasks out by day, Monday to Sunday, with a
+      Backlog for anything undated or due after this week. The dates follow
+      whichever week you open it in. Dragging a card to another day changes
+      its deadline; unfinished tasks from earlier days stay put with a late tag
+      and their original date.
+    </p>
+    <p>
+      The Calendar view shows the whole month. Use the arrows to look ahead or
+      back, hover a task to see its details, and drag it onto any day, or into
+      the Undated tray to clear its deadline.
+    </p>
+
+    <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/task-queue">View the Codebase</a>
+  </main>
+
+  <footer>
+    <p><a href="../index.html">&larr; Back to projects</a></p>
+  </footer>
+
+</body>
+</html>
