@@ -7,8 +7,9 @@
 //           on each task. Dragging a card sets its planned day and never
 //           touches the deadline. Unplanned tasks sit on their deadline day.
 //           If a planned day passes, the card stays there with a LATE tag.
-//   Calendar — a month grid. Arrows move between months; drag a task chip
-//           to any day (or to the Undated tray) to reschedule it.
+//   Calendar — a month grid. Arrows move between months. Shows tasks either
+//           by deadline or by planned day; dragging a chip changes whichever
+//           of the two you're looking at.
 
 // Same palette as style.css, as RGB arrays for p5
 const colors = {
@@ -102,6 +103,7 @@ let dragging = null; // { task, dx, dy, fromBox } while a card is being dragged
 let pressed = null;  // queue view: a card that's been pressed but not yet dragged
 
 let calMonth = null;  // first day of the month the calendar is showing
+let calMode = "deadline"; // "deadline" | "planned" — what the calendar is laid out by
 let calCells = [];    // the calendar layout from the last frame
 let tray = null;      // the Undated tray under the calendar
 let calButtons = [];  // the ‹ Today › buttons
@@ -274,7 +276,8 @@ class Task {
 
   // ----- Week view card -----
   // showDate: whether line 2 should spell out the date (backlog, late tasks)
-  showWeek(hovered, hoverCheck, lifted, showDate, hoverEdit = false) {
+  // boxKey: the date of the box the card sits in ("YYYY-MM-DD"), or null
+  showWeek(hovered, hoverCheck, lifted, boxKey, hoverEdit = false) {
     const done = this.doneTimer >= 0;
     const late = this.isPlanLate() && !done;     // its day has passed
     const overdue = this.isOverdue() && !done;   // its deadline has passed
@@ -341,8 +344,10 @@ class Task {
     let dateColor = colors.muted;
     let bold = false;
     const dueShort = this.due ? shortDate(parseDate(this.due)) : null;
-    if (late && this.planned) {
-      // Missed plan: show the day it was planned for, plus the deadline
+    // The box already shows the planned day, so only mention it when the
+    // card has been carried over from an earlier week (a different date)
+    const carried = late && this.planned && this.planned !== boxKey;
+    if (carried) {
       dateText = "Planned " + shortDate(parseDate(this.planned)) + (this.due ? " · due " + dueShort : "");
       dateColor = colors.pink;
       bold = true;
@@ -385,7 +390,9 @@ class Task {
   // dim: the chip sits in a day from the previous or next month
   showChip(hovered, hoverCheck, lifted, dim) {
     const done = this.doneTimer >= 0;
-    const late = this.isOverdue() && !done;
+    // Pink when the deadline has passed — or, when showing planned days,
+    // when the planned day has passed too
+    const late = !done && (this.isOverdue() || (calMode === "planned" && this.isPlanLate()));
     const p = PRIORITIES[this.priority];
     const a = constrain(this.alpha, 0, 255) * (dim ? 0.55 : 1);
     const w = this.w;
@@ -476,7 +483,7 @@ function draw() {
   for (const t of leaving) {
     t.updateLeaving();
     if (view === "queue") t.show(0, false);
-    else if (view === "week") t.showWeek(false, false, false, false);
+    else if (view === "week") t.showWeek(false, false, false, null);
     else t.showChip(false, false, false, false);
   }
   leaving = leaving.filter((t) => !t.isGone());
@@ -561,7 +568,7 @@ function drawWeekView() {
       task.update(box.x + BOX_PAD, box.y + BOX_HEAD + j * (WCARD_H + WCARD_GAP), WCARD_W, WCARD_H);
       const isHover = !dragging && task.contains(mouseX, mouseY);
       if (isHover) hovered = task;
-      task.showWeek(isHover, isHover && task.onCheck(mouseX, mouseY), false, box.index === BACKLOG,
+      task.showWeek(isHover, isHover && task.onCheck(mouseX, mouseY), false, box.date ? dateKey(box.date) : null,
         isHover && task.onWeekEdit(mouseX, mouseY));
     });
   }
@@ -571,7 +578,7 @@ function drawWeekView() {
     t.alpha = 255;
     t.w = lerp(t.w, WCARD_W, 0.25);
     t.h = WCARD_H;
-    t.showWeek(false, false, true, true);
+    t.showWeek(false, false, true, null);
     cursor("grabbing");
   } else if (hovered) {
     cursor(hovered.onCheck(mouseX, mouseY) || hovered.onWeekEdit(mouseX, mouseY) ? HAND : "grab");
@@ -778,8 +785,9 @@ function layoutCalendar() {
 
   const undated = [];
   for (const task of queue) {
-    if (!task.due) undated.push(task);
-    else if (byKey[task.due]) byKey[task.due].tasks.push(task);
+    const key = calDate(task);
+    if (!key) undated.push(task);
+    else if (byKey[key]) byKey[key].tasks.push(task);
   }
   for (const cell of cells) cell.tasks.sort((a, b) => byPriority(a, b) || a.id - b.id);
   undated.sort((a, b) => byPriority(a, b) || a.id - b.id);
@@ -858,19 +866,21 @@ function drawTray(isDropTarget) {
   textStyle(BOLD);
   textSize(15);
   fill(...colors.ink);
-  text("Undated", 14, 19);
-  const titleW = textWidth("Undated");
+  const trayTitle = calMode === "deadline" ? "Undated" : "Not planned";
+  text(trayTitle, 14, 19);
+  const titleW = textWidth(trayTitle);
   textFont("Helvetica");
   textStyle(NORMAL);
   textSize(13);
   fill(...colors.muted);
-  text("· drag a task here to clear its deadline", 14 + titleW + 6, 20);
+  text(calMode === "deadline" ? "· drag a task here to clear its deadline" : "· drag a task here to take it off the plan",
+    14 + titleW + 6, 20);
 
   if (tray.tasks.length === 0) {
     textSize(12);
     textStyle(ITALIC);
     fill(...colors.muted, 170);
-    text(isDropTarget ? "Drop here" : "Nothing undated", 14, 36 + CHIP_H / 2);
+    text(isDropTarget ? "Drop here" : calMode === "deadline" ? "Nothing undated" : "Everything has a day", 14, 36 + CHIP_H / 2);
     textStyle(NORMAL);
   }
   pop();
@@ -900,12 +910,12 @@ function drawCalendarNav() {
 
   // Tasks due in other months, so nothing feels lost
   const shown = new Set(calCells.flatMap((c) => c.tasks));
-  const elsewhere = queue.filter((t) => t.due && !shown.has(t)).length;
+  const elsewhere = queue.filter((t) => calDate(t) && !shown.has(t)).length;
   if (elsewhere > 0) {
     textAlign(RIGHT, CENTER);
     textSize(12);
     fill(...colors.muted);
-    text(elsewhere + (elsewhere === 1 ? " task" : " tasks") + " due in other months", MARGIN_X + CONTENT_W, y + h / 2);
+    text(elsewhere + (elsewhere === 1 ? " task" : " tasks") + (calMode === "deadline" ? " due" : " planned") + " in other months", MARGIN_X + CONTENT_W, y + h / 2);
   }
 }
 
@@ -918,6 +928,10 @@ function calendarDropTarget(px, py) {
 function drawTooltip(task) {
   const p = PRIORITIES[task.priority];
   let meta = p.label + " priority";
+  if (calMode === "planned") {
+    const day = task.weekDate();
+    meta += day ? " · planned " + longDate(parseDate(day)) : " · not planned";
+  }
   if (task.due) meta += (task.isOverdue() ? " · was due " : " · due ") + longDate(parseDate(task.due));
   else meta += " · no deadline";
 
@@ -1271,7 +1285,8 @@ function mouseReleased() {
     if (target) {
       const key = target === tray ? "undated" : target.key;
       if (key !== dragging.fromBox) {
-        dragging.task.due = key === "undated" ? null : key;
+        if (calMode === "deadline") dragging.task.due = key === "undated" ? null : key;
+        else dragging.task.planned = key === "undated" ? "backlog" : key; // deadline untouched
         saveQueue();
       }
     }
@@ -1391,6 +1406,15 @@ function wireUpControls() {
     saveQueue();
   });
 
+  for (const btn of document.querySelectorAll("[data-cal-mode]")) {
+    btn.addEventListener("click", () => {
+      calMode = btn.dataset.calMode;
+      dragging = null;
+      applyView();
+      saveQueue();
+    });
+  }
+
   document.getElementById("complete-next").addEventListener("click", () => completeTask(orderedQueue()[0]));
 
   document.getElementById("load-samples").addEventListener("click", () => {
@@ -1406,7 +1430,7 @@ function wireUpControls() {
     saveQueue();
   });
 
-  for (const btn of document.querySelectorAll(".view-toggle button")) {
+  for (const btn of document.querySelectorAll("[data-view]")) {
     btn.addEventListener("click", () => {
       view = btn.dataset.view;
       dragging = null;
@@ -1420,14 +1444,20 @@ function wireUpControls() {
 
 // Sync the page around the canvas with the current view
 function applyView() {
-  for (const btn of document.querySelectorAll(".view-toggle button")) {
+  for (const btn of document.querySelectorAll("[data-view]")) {
     btn.classList.toggle("active", btn.dataset.view === view);
   }
+  for (const btn of document.querySelectorAll("[data-cal-mode]")) {
+    btn.classList.toggle("active", btn.dataset.calMode === calMode);
+  }
   document.getElementById("order-control").style.display = view === "queue" ? "" : "none";
+  document.getElementById("cal-mode-toggle").style.display = view === "calendar" ? "" : "none";
   const hints = {
     queue: "Drag a task to move it &middot; &#10003; marks it done &middot; the pencil edits it &middot; saved in this browser.",
     week: "Drag cards to plan which day to work on them (deadlines stay put) &middot; tick the circle to mark one done &middot; the pencil edits it.",
-    calendar: "Drag tasks between days to reschedule &middot; tick the circle to mark one done &middot; double-click to edit."
+    calendar: calMode === "deadline"
+      ? "Showing deadlines &middot; drag a task to change its deadline &middot; tick the circle to mark one done &middot; double-click to edit."
+      : "Showing planned days &middot; drag a task to re-plan it (deadlines stay put) &middot; tick the circle to mark one done &middot; double-click to edit."
   };
   document.getElementById("hint").innerHTML = hints[view];
 }
@@ -1438,6 +1468,12 @@ function applyView() {
 function today() {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+// The date a task sits on in the calendar, depending on the Show switch
+// (null = it goes in the tray under the grid)
+function calDate(task) {
+  return calMode === "deadline" ? task.due : task.weekDate();
 }
 
 function monthStart(d) {
@@ -1498,7 +1534,8 @@ function saveQueue() {
         tasks: queue.map((t) => ({ text: t.text, priority: t.priority, due: t.due, planned: t.planned })),
         doneCount,
         orderBy,
-        view
+        view,
+        calMode
       })
     );
   } catch (e) {
@@ -1513,6 +1550,7 @@ function loadQueue() {
     doneCount = data.doneCount || 0;
     if (["manual", "priority", "deadline"].includes(data.orderBy)) orderBy = data.orderBy;
     if (["queue", "week", "calendar"].includes(data.view)) view = data.view;
+    if (["deadline", "planned"].includes(data.calMode)) calMode = data.calMode;
     for (const t of data.tasks || []) {
       // Older saves stored plain strings
       if (typeof t === "string") enqueue(t, "medium", null);
