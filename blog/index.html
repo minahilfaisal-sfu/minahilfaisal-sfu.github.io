@@ -1,0 +1,64 @@
+---
+# The lines between the dashes tell Jekyll to process this page, so the
+# list of posts below fills itself in. You don't need to edit this file
+# to publish a post: just add one to _posts/.
+title: Blog
+description: >-
+  Writing by Minahil Faisal on interactive design, front-end development,
+  and things I'm learning in my master's at SFU.
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% seo %}
+  {% feed_meta %}
+
+  <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/blog/blog.css' | relative_url }}">
+</head>
+<body>
+
+  <header>
+    <a class="site-name" href="{{ '/' | relative_url }}">Minahil Faisal</a>
+    <nav>
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <a href="{{ '/portfolio/' | relative_url }}">Portfolio</a>
+      <a href="{{ '/projects/' | relative_url }}">Projects</a>
+      <a href="{{ '/blog/' | relative_url }}">Blog</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Blog</h1>
+    <p class="tagline">Things I'm learning in my master's, and whatever else I feel like writing about.</p>
+
+    {% if site.posts.size > 0 %}
+    <ul class="card-list post-list">
+      {% for post in site.posts %}
+      <li>
+        <a href="{{ post.url | relative_url }}">
+          <span class="title">{{ post.title }}</span>
+          <span class="post-date">{{ post.date | date: "%-d %b %Y" }}</span>
+          {% if post.description %}<span class="description">{{ post.description }}</span>{% endif %}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No posts yet. Check back soon.</p>
+    {% endif %}
+
+    <p class="subscribe">
+      Follow along with the <a href="{{ '/blog/feed.xml' | relative_url }}">RSS feed</a>.
+    </p>
+  </main>
+
+  <footer>
+    <p><a href="{{ '/' | relative_url }}">&larr; Back home</a></p>
+  </footer>
+
+</body>
+</html>

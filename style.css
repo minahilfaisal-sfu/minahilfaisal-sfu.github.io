@@ -135,6 +135,62 @@ main a:hover, footer a:hover {
   background-size: 100% 2px;
 }
 
+/* --- professional timeline on the home page ----------------- */
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 1.5rem;
+  border-left: 2px solid var(--line);
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 1.75rem 1.5rem;
+}
+
+.timeline li:last-child { padding-bottom: 0.25rem; }
+
+/* the dot on the line */
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 0.45rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--pink);
+}
+
+.timeline li:nth-child(even)::before { border-color: var(--green); }
+
+.timeline .when {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.timeline .role {
+  display: block;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.timeline .org {
+  display: block;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.timeline .entry p {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+}
+
 /* --- the list of links on the projects pages ----------------- */
 
 .card-list {

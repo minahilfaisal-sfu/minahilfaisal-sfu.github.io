@@ -1,0 +1,139 @@
+/* ===========================================================
+   Portfolio page styles. Loaded after ../style.css.
+   =========================================================== */
+
+/* --- Where I've worked: logo tiles -------------------------- */
+
+.logo-grid {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+
+.logo-grid li {
+  padding: 1.25rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logo-grid li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -12px rgba(43, 36, 32, 0.25);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.9rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Shown only when the logo file is missing */
+.logo .initials { display: none; }
+
+.logo.missing {
+  background: var(--pink-soft);
+}
+
+.logo-grid li:nth-child(even) .logo.missing { background: var(--green-soft); }
+
+.logo.missing .initials {
+  display: block;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.logo-grid .org {
+  display: block;
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+.logo-grid .role {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.logo-grid .when {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* --- Selected projects -------------------------------------- */
+
+.project-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.project {
+  padding: 1.25rem 1.4rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--pink);
+  border-radius: 10px;
+}
+
+.project:nth-child(even) { border-left-color: var(--green); }
+
+.project h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin: 0 0 0.4rem;
+}
+
+.project p {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+}
+
+.tags {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tags li {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.project .links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0;
+}
