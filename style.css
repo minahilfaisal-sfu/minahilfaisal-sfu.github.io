@@ -135,6 +135,11 @@ main a:hover, footer a:hover {
   background-size: 100% 2px;
 }
 
+/* Superscript text (<sup>), e.g. "new" labels, in the site's pink */
+sup {
+  color: var(--pink);
+}
+
 /* --- the list of links on the projects pages ----------------- */
 
 .card-list {
