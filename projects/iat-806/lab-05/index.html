@@ -31,16 +31,39 @@
 
     <!-- EDIT ME: title and description -->
     <h1>Lab 05 — Classes, This & Methods</h1>
-    <p class="tagline">A short description of what this sketch does.</p>
+    <p class="tagline">The balls do weird things.</p>
 
     <!-- The canvas p5 creates gets placed right here. -->
     <div id="sketch-holder"></div>
 
     <h2>Notes</h2>
-    <p>
-      Write about what you made: what you were going for, what was hard,
-      what you'd do differently. A few sentences is plenty.
-    </p>
+    <p>Methods in the <code>Ball</code> class:</p>
+    <ol>
+      <li><code>show()</code>: draws the ball as a circle in its own color, at its current position and size.</li>
+      <li><code>move()</code>: nudges the ball a few pixels in a random direction, so it wanders.</li>
+    </ol>
+  
+   <p>Updated methods:</p>
+    <ol>
+      <li><code>changeSize(minR, maxR)</code>: randomly grows or shrinks the ball a little, constraining its size between <code>minR</code> and <code>maxR</code>.</li>
+    </ol>
+
+    <p>New methods:</p>
+    <ol>
+      <li><code>updatePosition(x, y)</code>: moves the ball to a new spot and resets its falling speed.</li>
+      <li><code>swirl(mouseX, mouseY)</code>: moves the ball around in a circle centered on the mouse.</li>
+      <li><code>fall()</code>: pulls the ball down with gravity and bounces it off the bottom of the canvas, a bit lower each time.</li>
+    </ol>
+
+    <p>Interactions:</p>
+    <ul>
+      <li>Ten balls wander around, starting from the middle of the canvas by default.</li>
+      <li>The <b>color</b> of all of the balls is unique, and the <b>size</b> keeps randomly incrementing or decrementing making them appear jittery.</li>
+      <li><b>Mouse Click</b> anywhere on the canvas makes them appear at the mouse position with a random increment/decrement of 50 pixels
+        and gravity is activated, so they fall to the bottom of the canvas.</li>
+      <li><b>Hold space</b> to make them swirl around the mouse.</li>
+       <li><b>Press R</b> to turn gravity off and reset the balls to the middle of the canvas.</li>
+    </ul>
 
     <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/iat-806/lab-05">View the Codebase</a>
 
