@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Page title, description and share previews, for search engines -->
+  {% seo %}
+  {% feed_meta %}
+
+  <link rel="stylesheet" href="{{ '/style.css' | relative_url }}">
+
+  <!-- Shared header: <site-header> -->
+
+  <script src="{{ '/header.js' | relative_url }}"></script>
+  <link rel="stylesheet" href="{{ '/blog/blog.css' | relative_url }}">
+</head>
+<body>
+
+  <site-header></site-header>
+
+  <main>
+    <a class="back" href="{{ '/blog/' | relative_url }}">&larr; Blog</a>
+
+    {% assign words = content | number_of_words %}
+    {% assign minutes = words | divided_by: 200 %}
+    {% if minutes < 1 %}{% assign minutes = 1 %}{% endif %}
+
+    <article class="post">
+      <h1>{{ page.title }}</h1>
+      <p class="post-meta">
+        <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%-d %b %Y" }}</time>
+        &middot; {{ minutes }} min read
+      </p>
+      {% if page.tags.size > 0 %}
+      <p class="post-tags">
+        {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </p>
+      {% endif %}
+
+      <div class="post-body">
+        {{ content }}
+      </div>
+    </article>
+
+    {% if page.previous or page.next %}
+    <nav class="post-nav" aria-label="More posts">
+      {% if page.previous %}
+      <a class="older" href="{{ page.previous.url | relative_url }}">
+        <span class="label">&larr; Older</span>
+        <span class="title">{{ page.previous.title }}</span>
+      </a>
+      {% endif %}
+      {% if page.next %}
+      <a class="newer" href="{{ page.next.url | relative_url }}">
+        <span class="label">Newer &rarr;</span>
+        <span class="title">{{ page.next.title }}</span>
+      </a>
+      {% endif %}
+    </nav>
+    {% endif %}
+  </main>
+
+  <footer>
+    <p><a href="{{ '/blog/' | relative_url }}">&larr; All posts</a></p>
+  </footer>
+
+</body>
+</html>

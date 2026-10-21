@@ -1,0 +1,51 @@
+# ===========================================================
+# Settings for the blog.
+#
+# GitHub Pages runs a tool called Jekyll on this repo every time
+# you push. Jekyll turns the Markdown posts in _posts/ into web
+# pages (using _layouts/post.html). Every plain .html file
+# elsewhere (home, projects, sketches) is served exactly as is.
+# ===========================================================
+
+title: Minahil Faisal
+description: >-
+  Student at Simon Fraser University's School of Interactive Arts &
+  Technology, writing about interactive design, front-end development,
+  and what I'm learning in my master's.
+author: Minahil Faisal
+lang: en
+url: https://minahilfaisal-sfu.github.io
+baseurl: ""
+
+# A post saved as _posts/2026-10-18-my-first-post.md is published at
+# /blog/my-first-post/
+permalink: /blog/:title/
+
+markdown: kramdown
+kramdown:
+  input: GFM            # GitHub-flavoured Markdown, same as in READMEs
+  syntax_highlighter: rouge
+
+# All three come built in with GitHub Pages:
+#   seo-tag  — titles, descriptions and share previews for search engines
+#   sitemap  — /sitemap.xml, the list of pages Google should crawl
+#   feed     — /blog/feed.xml, so people can follow the blog in a reader
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-feed
+
+feed:
+  path: blog/feed.xml
+
+# Every post uses the post layout, so posts don't need to say so
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+exclude:
+  - README.md
+  - .claude

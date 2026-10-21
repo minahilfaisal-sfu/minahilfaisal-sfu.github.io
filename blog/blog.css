@@ -1,0 +1,187 @@
+/* ===========================================================
+   Blog styles. Loaded after ../style.css, which sets the colors,
+   fonts and card list; this file adds what long-form writing
+   needs: comfortable text, headings, code, quotes, images.
+   =========================================================== */
+
+/* --- the list of posts on /blog/ ----------------------------- */
+
+.post-list .post-date {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.post-list .description {
+  display: block;
+}
+
+.subscribe {
+  margin-top: 2.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* --- a single post ------------------------------------------- */
+
+.post h1 {
+  margin-bottom: 0.4rem;
+}
+
+.post-meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0 0 0.75rem;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 2rem;
+}
+
+.tag {
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.post-body {
+  margin-top: 2rem;
+}
+
+.post-body h2 { margin-top: 2.75rem; }
+
+.post-body h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 2rem 0 0.5rem;
+}
+
+.post-body p,
+.post-body ul,
+.post-body ol {
+  margin: 0 0 1.25rem;
+}
+
+.post-body li { margin-bottom: 0.35rem; }
+
+.post-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2rem auto;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -14px rgba(43, 36, 32, 0.3);
+}
+
+.post-body blockquote {
+  margin: 1.75rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  border-left: 3px solid var(--pink);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.post-body blockquote p:last-child { margin-bottom: 0; }
+
+.post-body hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 2.5rem 0;
+}
+
+/* Tables */
+.post-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+}
+
+.post-body th,
+.post-body td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.post-body th { font-weight: 600; }
+
+/* Code: `inline` and fenced blocks */
+.post-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  padding: 0.1em 0.35em;
+  border-radius: 5px;
+  background: var(--pink-soft);
+}
+
+.post-body pre {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  line-height: 1.5;
+}
+
+.post-body pre code {
+  padding: 0;
+  background: none;
+  font-size: 0.85rem;
+}
+
+.post-body div.highlighter-rouge { margin: 0 0 1.5rem; }
+.post-body div.highlighter-rouge pre { margin: 0; }
+
+/* Syntax colors for code blocks, from the site palette */
+.highlight .c, .highlight .c1, .highlight .cm { color: var(--muted); font-style: italic; } /* comments */
+.highlight .k, .highlight .kd, .highlight .kr, .highlight .kc { color: var(--pink); }      /* keywords */
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sb { color: var(--green); }     /* strings */
+.highlight .mi, .highlight .mf, .highlight .m { color: #b07828; }                          /* numbers */
+.highlight .nf, .highlight .fm { color: var(--ink); font-weight: 600; }                    /* function names */
+
+/* --- older / newer links at the end of a post ---------------- */
+
+.post-nav {
+  display: flex;
+  gap: 1rem;
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.post-nav a {
+  flex: 1;
+  display: block;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper-raised);
+  background-image: none; /* cancel the underline-grow effect */
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+.post-nav a:hover { border-color: var(--pink); }
+.post-nav .newer { text-align: right; margin-left: auto; }
+
+.post-nav .label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.post-nav .title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+}

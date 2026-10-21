@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio — Minahil Faisal</title>
+  <meta name="description" content="Minahil Faisal's portfolio: where I've worked as a full-stack software engineer and researcher, and selected projects with live demos.">
+
+  <!-- One folder deep, so one level up to the shared stylesheet -->
+  <link rel="stylesheet" href="../style.css">
+  <!-- Shared header: <site-header> -->
+  <script src="../header.js"></script>
+  <link rel="stylesheet" href="portfolio.css">
+</head>
+<body>
+
+  <site-header></site-header>
+
+  <main>
+    <h1>Portfolio</h1>
+    <p class="tagline">Where I've worked, and some of what I've built.</p>
+
+    <h2>Where I've worked</h2>
+
+    <!-- ===================================================
+         LOGO TILES — one <li> per company or institution.
+         Put the logo in portfolio/logos/ with the file name
+         used in src="...". A square-ish PNG or SVG works best.
+         Until the file is there, the tile shows the initials.
+         =================================================== -->
+    <ul class="logo-grid">
+      <li>
+        <div class="logo">
+          <img src="logos/sfu.png" alt="" onerror="this.parentNode.classList.add('missing'); this.remove();">
+          <span class="initials">SFU</span>
+        </div>
+        <span class="org">Simon Fraser University</span>
+        <span class="role">Graduate Research Assistant, SIAT</span>
+        <span class="when">2026 &ndash; now</span>
+      </li>
+      <li>
+        <div class="logo">
+          <img src="logos/arbisoft.png" alt="" onerror="this.parentNode.classList.add('missing'); this.remove();">
+          <span class="initials">A</span>
+        </div>
+        <span class="org">Arbisoft</span>
+        <span class="role">Full-Stack Software Engineer</span>
+        <span class="when">3 years</span>
+      </li>
+    </ul>
+
+    <p class="note">
+      Most of my industry work is under NDA, so it isn't shown here &mdash;
+      I'm always happy to talk about it.
+    </p>
+
+    <h2>Selected projects</h2>
+
+    <!-- ===================================================
+         PROJECT CARDS — copy one <article> to add a project.
+         Tags are the little chips; links go in .links.
+         =================================================== -->
+    <div class="project-list">
+
+      <article class="project">
+        <h3>Spotify clone</h3>
+        <p>
+          A music streaming app with a Vite front end and a Django back end
+          backed by Postgres, with media served through Cloudinary. Deployed
+          on Vercel.
+        </p>
+        <ul class="tags">
+          <li>Vite</li><li>Django</li><li>Postgres</li><li>Vercel</li>
+        </ul>
+        <p class="links">
+          <a href="https://spotify-clone-frontend-kappa-blush.vercel.app">Live demo &rarr;</a>
+        </p>
+      </article>
+
+      <article class="project">
+        <h3>D-SymBIA</h3>
+        <p>
+          Research tool for comparing building-integrated agriculture
+          scenarios: a data pipeline (exploratory analysis, k-means
+          clustering, decision-tree classification) feeding an interactive
+          dashboard. My thesis work adds AI to the dashboard's visual
+          analytics.
+        </p>
+        <ul class="tags">
+          <li>Python</li><li>Streamlit</li><li>Data visualization</li><li>Research</li>
+        </ul>
+      </article>
+
+      <article class="project">
+        <h3>Task Queue</h3>
+        <p>
+          A to-do queue drawn in p5.js, with priorities and deadlines, a
+          drag-and-drop weekly planner and a month calendar.
+        </p>
+        <ul class="tags">
+          <li>p5.js</li><li>JavaScript</li><li>Interaction design</li>
+        </ul>
+        <p class="links">
+          <a href="../projects/task-queue/index.html">Try it &rarr;</a>
+          <a href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/task-queue">Code</a>
+        </p>
+      </article>
+
+      <article class="project">
+        <h3>IAT 806 sketches</h3>
+        <p>
+          Labs and assignments from my graduate computing course: generative
+          drawing, animation, and interactive p5.js pieces.
+        </p>
+        <ul class="tags">
+          <li>p5.js</li><li>Creative coding</li>
+        </ul>
+        <p class="links">
+          <a href="../projects/iat-806/index.html">See the work &rarr;</a>
+        </p>
+      </article>
+
+    </div>
+  </main>
+
+  <footer>
+    <p><a href="../index.html">&larr; Back home</a></p>
+  </footer>
+
+</body>
+</html>

@@ -13,7 +13,9 @@
 
 const NAV_LINKS = [
   { label: "Home", path: "index.html" },
+  { label: "Portfolio", path: "portfolio/index.html" },
   { label: "Projects", path: "projects/index.html" },
+  { label: "Blog", path: "blog/index.html" },
 ];
 
 // The site's root folder, found from this script's own address
