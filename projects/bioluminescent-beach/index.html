@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bioluminescent Beach — Minahil Faisal</title>
+
+  <!-- Two folders deep (projects/bioluminescent-beach/), so two levels up -->
+  <link rel="stylesheet" href="../../style.css">
+  <!-- Shared header: <site-header> -->
+  <script src="../../header.js"></script>
+
+  <!-- p5.js, version 2.3.3 -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.3.3/lib/p5.min.js"></script>
+  <!-- ml5.js, for hand tracking -->
+  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+
+  <!-- The sketch. Keep these lines last. -->
+  <script src="Plankton.js"></script>
+  <script src="sketch.js"></script>
+</head>
+<body>
+
+  <site-header></site-header>
+
+  <main>
+    <a class="back" href="../index.html">&larr; Projects</a>
+
+    <h1>Bioluminescent Beach</h1>
+    <p class="tagline">Glowing plankton drift along a moonlit shoreline. Hold a hand up to your camera and trail your fingertips through the shallows to make them flash.</p>
+
+    <!-- The canvas p5 creates gets placed right here. -->
+    <div id="sketch-holder"></div>
+
+    <h2>How it works</h2>
+    <p>
+      The shoreline is a wavy curve with a slow tide that pushes it in and out.
+      Each speck of plankton is an object that remembers how far it sits from
+      that curve, so the glitter rides the waves while it jitters around.
+      <a href="https://ml5js.org/">ml5.js</a> handPose tracks your fingertips
+      through the webcam, and any plankton near a fingertip lights up and slowly
+      fades, the way real bioluminescence flashes when the water is disturbed.
+      No camera? Your mouse works too. The video never leaves your browser.
+    </p>
+
+    <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/bioluminescent-beach">View the Codebase</a>
+  </main>
+
+  <footer>
+    <p><a href="../index.html">&larr; Back to projects</a></p>
+  </footer>
+
+</body>
+</html>

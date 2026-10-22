@@ -1,7 +1,7 @@
 let balls = [];
 let bodySegmentation;
 let segmentation;
-let numBalls = 500;
+let numBalls = 5000;
 let video;
 let options = {
   maskType: "person",
@@ -40,12 +40,11 @@ function draw() {
   background(120);
 
   if (segmentation) {
-    video.mask(segmentation.mask, 0, 0, width, height);
+    video.mask(segmentation.mask);
     // draw it mirrored, like a selfie camera
     push();
     translate(width, 0);
     scale(-1, 1);
-    image(video, 0, 0);
     pop();
   }
 
