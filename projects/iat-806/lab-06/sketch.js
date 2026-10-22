@@ -1,17 +1,34 @@
-const colors = {
-  pink: [255, 182, 193],
-  black: [0, 0, 0],
-  white: [255, 255, 255]
-}
+let balls = [];
+
+let numBalls = 500;
 
 function setup() {
-  let canvas = createCanvas(800, 600);
+  const canvas = createCanvas(600, 600);
   canvas.parent("sketch-holder");
+
+  for (let i = 0; i < numBalls; i++) {
+    let ball = createRandomBall();
+    balls.push(ball);
+  }
 }
 
+// i want to make a bioluminiscent beach
+// and i want the edges to light up wherever we hold up a finger
+
 function draw() {
-  background(colors.black);
-  fill(colors.pink);
-  stroke(colors.white);
-  circle(400, 265, 50);
+  background(120);
+
+  for (let ball of balls) {
+    ball.update(2);
+    // for highlighting
+    // let active = ball.contains(mouseX, mouseY)
+    // ball.respond(active);
+  }
+}
+
+function mousePressed() {
+  balls.forEach((ball) => {
+    let active = ball.contains(mouseX, mouseY)
+    ball.respond(active);
+  })
 }

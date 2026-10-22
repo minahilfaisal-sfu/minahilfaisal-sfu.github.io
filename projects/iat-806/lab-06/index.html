@@ -1,48 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lab 02 — Minahil Faisal</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lab 06 — Minahil Faisal</title>
 
-  <!-- Three folders deep, so three levels up to the stylesheet -->
-  <link rel="stylesheet" href="../../../style.css">
-  <!-- Shared header: <site-header> -->
-  <script src="../../../header.js"></script>
+    <!-- Three folders deep, so three levels up to the stylesheet -->
+    <link rel="stylesheet" href="../../../style.css" />
+    <!-- Shared header: <site-header> -->
+    <script src="../../../header.js"></script>
 
-  <!-- p5.js, version 2.3.3. Every sketch page needs this line. -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@2.3.3/lib/p5.min.js"></script>
+    <!-- p5.js, version 2.3.3. Every sketch page needs this line. -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@2.3.3/lib/p5.min.js"></script>
 
-  <!-- Your code. Keep this line last. -->
-  <script src="sketch.js"></script>
-</head>
-<body>
+    <!-- Your code. Keep this line last. -->
+    <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+    <script src="Ball.js"></script>
+    <script src="sketch.js"></script>
+  </head>
+  <body>
+    <site-header></site-header>
 
-  <site-header></site-header>
+    <main>
+      <a class="back" href="../index.html">&larr; IAT 806</a>
 
-  <main>
-    <a class="back" href="../index.html">&larr; IAT 806</a>
+      <!-- EDIT ME: title and description -->
+      <h1>Lab 06 — Bioluminescent Beach</h1>
+      <p class="tagline">Glowing plankton jitter along a moonlit shoreline. Move your mouse through the water to stir them up.</p>
 
-    <!-- EDIT ME: title and description -->
-    <h1>Lab 06 — Title Here</h1>
-    <p class="tagline">A short description of what this sketch does.</p>
+      <!-- The canvas p5 creates gets placed right here. -->
+      <div id="sketch-holder"></div>
 
-    <!-- The canvas p5 creates gets placed right here. -->
-    <div id="sketch-holder"></div>
+      <h2>Notes</h2>
+      <p>
+        Write about what you made: what you were going for, what was hard, what
+        you'd do differently. A few sentences is plenty.
+      </p>
 
-    <h2>Notes</h2>
-    <p>
-      Write about what you made: what you were going for, what was hard,
-      what you'd do differently. A few sentences is plenty.
-    </p>
+      <a
+        class="link"
+        href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/iat-806/lab-06"
+        >View the Codebase</a
+      >
+    </main>
 
-    <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/iat-806/lab-06">View the Codebase</a>
-
-  </main>
-
-  <footer>
-    <p><a href="../index.html">&larr; Back to IAT 806</a></p>
-  </footer>
-
-</body>
+    <footer>
+      <p><a href="../index.html">&larr; Back to IAT 806</a></p>
+    </footer>
+  </body>
 </html>
