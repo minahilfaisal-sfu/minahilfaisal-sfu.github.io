@@ -64,6 +64,15 @@ class Ball {
     fill(this.color);
     circle(this.x, this.y, this.r * 2);
   }
+
+  isOnBody(mask) {
+    // the video is drawn mirrored, so a ball on the left of the canvas is
+    // over the right side of the mask. Mirror x, then scale to the mask's size.
+    let mx = floor((width - this.x) * mask.width / width);
+    let my = floor(this.y * mask.height / height);
+    let pixel = mask.get(mx, my); // returns [r,g,b,a]
+    return pixel[3] < 128;
+  }
 }
 
 function createRandomBall() {
