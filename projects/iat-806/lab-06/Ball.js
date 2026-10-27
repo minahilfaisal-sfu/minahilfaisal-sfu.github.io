@@ -6,17 +6,13 @@ const colors = {
 
 class Ball {
   constructor(x, y, c, r, maxR = 10) {
-    // it's like the instance saying, MY X is 400. In Python the keyword is self.x.
     this.x = x;
     this.y = y;
     this.color = c;
     this.originalColor = c;
     this.highlightColor = colors.pink;
-    // ALSO this is a diameter, not radius.
-    // This is our mistake... we should have looked at the documentation.
     this.r = r;
     this.maxR = maxR;
-    // TODO: if one of your methods needs a new attribute, create it here.
   }
 
   update(byHowMuch) {
@@ -49,14 +45,11 @@ class Ball {
   }
 
   move(byHowMuch) {
-    // this.x = this.x + random(-5,5)
     this.x += random(-byHowMuch, byHowMuch);
     this.y += random(-byHowMuch, byHowMuch);
   }
 
   changeSize(byHowMuch) {
-    // we fix the size like this:
-    // the constrain is saying that it shouldn't grow larger than a certain amount.
     this.r = constrain(this.r + random(-byHowMuch, byHowMuch), 2, this.maxR);
   }
 
@@ -66,9 +59,7 @@ class Ball {
   }
 
   isOnBody(mask) {
-    // the video is drawn mirrored, so a ball on the left of the canvas is
-    // over the right side of the mask. Mirror x, then scale to the mask's size.
-    let mx = floor((width - this.x) * mask.width / width);
+    let mx = floor(this.x * mask.width / width);
     let my = floor(this.y * mask.height / height);
     let pixel = mask.get(mx, my); // returns [r,g,b,a]
     return pixel[3] < 128;

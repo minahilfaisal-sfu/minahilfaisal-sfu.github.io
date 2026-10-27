@@ -5,8 +5,6 @@ let numBalls = 5000;
 let video;
 let options = {
   maskType: "person",
-  // flipped: true,  <- ml5 bug: crashes SelfieSegmentation ("source width is zero").
-  // We mirror the picture ourselves in draw() instead.
 };
 
 async function setup() {
@@ -16,7 +14,7 @@ async function setup() {
   bodySegmentation = await ml5.bodySegmentation("SelfieSegmentation", options);
 
   // create the video
-  video = createCapture(VIDEO); // not flipped, so it lines up with the mask
+  video = createCapture(VIDEO);
   video.size(600, 450);
   video.hide();
 
@@ -33,19 +31,11 @@ function gotResults(result) {
   segmentation = result;
 }
 
-// i want to make a bioluminiscent beach
-// and i want the edges to light up wherever we hold up a finger
-
 function draw() {
   background(120);
 
   if (segmentation) {
     video.mask(segmentation.mask);
-    // draw it mirrored, like a selfie camera
-    push();
-    translate(width, 0);
-    scale(-1, 1);
-    pop();
   }
 
   for (let ball of balls) {
