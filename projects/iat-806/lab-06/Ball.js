@@ -1,8 +1,8 @@
 const colors = {
   pink: [255, 182, 193],
   black: [0, 0, 0],
-  white: [255, 255, 255]
-}
+  white: [255, 255, 255],
+};
 
 class Ball {
   constructor(x, y, c, r, maxR = 10) {
@@ -23,13 +23,13 @@ class Ball {
 
   contains(pointX, pointY) {
     // distance from the center of the circle to the point
-    // should be within the radius length for the point 
+    // should be within the radius length for the point
     // to be inside the ball
     return dist(this.x, this.y, pointX, pointY) < this.r;
   }
 
   respond(active) {
-    if(active) {
+    if (active) {
       this.highlight();
     } else {
       this.removeHighlight();
@@ -59,8 +59,8 @@ class Ball {
   }
 
   isOnBody(mask) {
-    let mx = floor(this.x * mask.width / width);
-    let my = floor(this.y * mask.height / height);
+    let mx = floor((this.x * mask.width) / width);
+    let my = floor((this.y * mask.height) / height);
     let pixel = mask.get(mx, my); // returns [r,g,b,a]
     return pixel[3] < 128;
   }
