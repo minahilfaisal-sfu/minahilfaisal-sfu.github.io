@@ -14,6 +14,8 @@ let options = {
   maskType: "person",
 };
 
+let popSound;
+
 async function setup() {
   let canvas = createCanvas(800, 600);
   canvas.parent("sketch-holder");
@@ -21,6 +23,8 @@ async function setup() {
   for (let i = 0; i < numBalls; i++) {
     balls.push(createRandomBall());
   }
+
+  popSound = await loadSound("assets/pop.wav");
 
   bodySegmentation = await ml5.bodySegmentation("SelfieSegmentation", options);
 
@@ -34,13 +38,16 @@ async function setup() {
 
 function draw() {
   background(120);
-//   image(video, 0, 0);
+  //   image(video, 0, 0);
   for (let ball of balls) {
     let onBody = segmentation && ball.isOnBody(segmentation.mask);
 
-    let active = ball.contains(mouseX, mouseY) || onBody;
-
+    let active = onBody;
     ball.respond(active);
+    
+    if (ball.contains(mouseX, mouseY)) {
+      ball.outline("black")
+    }
 
     ball.update(1);
   }
@@ -49,18 +56,26 @@ function draw() {
 function createRandomBall() {
   let ballX = random(0, width);
   let ballY = random(0, height);
-  let ballC = color(140, 0, 140 + random(-100, 100));
-  let ballR = 5;
+  // let ballC = color(140, 0, 140 + random(-100, 100));
+  let ballR = 10;
 
-let randomValue = random();
-  if (randomValue < 0.2) {
-    return new BubblyBall(ballX, ballY, ballC, ballR);
-  } else if (randomValue < 0.5) {
-    return new FlowerBall(ballX, ballY, ballC, ballR);
+  let randomValue = random();
+  if (randomValue < 0.5) {
+    return new BubblyBall(ballX, ballY, ballR);
   }
-  return new Ball(ballX, ballY, ballC, ballR);
+  return new EmojiBall(ballX, ballY, ballR, "🫧");
 }
 
 function gotResults(result) {
   segmentation = result;
+}
+
+function mousePressed() {
+  for (let i = balls.length - 1; i >= 0; i--) {
+    if (balls[i].contains(mouseX, mouseY)) {
+      balls.splice(i, 1);
+      popSound.play();
+      break;
+    }
+  }
 }

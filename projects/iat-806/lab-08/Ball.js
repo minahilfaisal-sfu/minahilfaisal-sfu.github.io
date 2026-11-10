@@ -52,40 +52,63 @@ class Ball {
     this.fillColor = this.highlightColor;
   }
 
+  outline(lineColor) {
+    this.strokeColor = lineColor;
+  }
+
   deHighlight() {
     this.fillColor = this.origColor;
   }
 
   isOnBody(mask) {
     let px = mask.get(floor(this.x), floor(this.y)); // [r, g, b, a]
-    return px[3] < 128; // opaque = body
+    return px[3] < 128;
   }
 
   show() {
     fill(this.fillColor);
-    noStroke();
+    if (this.strokeColor) {
+      stroke(this.strokeColor);
+      strokeWeight(2);
+    } else {
+      noStroke();
+    }
     circle(this.x, this.y, this.r * 2);
+    this.strokeColor = null;
   }
 }
 
 class BubblyBall extends Ball {
-    respond(active) {
-        super.respond(active);
-        this.changeSize(active ? 0.5 : -0.5);
-    }
+  constructor(x, y, r) {
+    const bubblyColors = [
+      color(173, 216, 230), // light blue
+      color(135, 206, 250), // sky blue
+      color(176, 224, 230), // powder blue
+      color(100, 149, 237), // cornflower blue
+      color(70, 130, 180), // steel blue
+    ];
+
+    let randomColor = random(bubblyColors);
+    super(x, y, randomColor, r);
+  }
+
+  respond(active) {
+    super.respond(active);
+    this.changeSize(active ? 0.5 : -0.5);
+  }
 }
 
-class FlowerBall extends Ball {
-    constructor(x, y, fillColor, r, emoji) {
-        super(x, y, fillColor, r);
-        this.emoji = emoji ?? "🌸"; // Default emoji if none provided
-    }
+class EmojiBall extends Ball {
+  constructor(x, y, r, emoji) {
+    super(x, y, color(255), r);
+    this.emoji = emoji ?? "🫧";
+  }
 
-    show() {
-        textSize(this.r * 2); // Adjust text size based on radius
-        textAlign(CENTER, CENTER);
-        fill(this.fillColor);
-        noStroke();
-        text(this.emoji, this.x, this.y);
-    }
+  show() {
+    textSize(this.r * 2); // Adjust text size based on radius
+    textAlign(CENTER, CENTER);
+    fill(this.fillColor);
+    noStroke();
+    text(this.emoji, this.x, this.y);
+  }
 }
