@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lab 09 — Minahil Faisal</title>
+
+    <!-- Three folders deep, so three levels up to the stylesheet -->
+    <link rel="stylesheet" href="../../../style.css" />
+    <!-- Shared header: <site-header> -->
+    <script src="../../../header.js"></script>
+
+    <!-- Form styles for this page only, using the site's colors -->
+    <style>
+      #chat-form input,
+      #chat-form textarea,
+      #chat-form button {
+        display: block;
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 0.6rem 0.8rem;
+        font: inherit;
+        font-size: 0.95rem;
+        color: var(--ink);
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      #chat-form button {
+        width: auto;
+        border-color: var(--pink);
+        cursor: pointer;
+      }
+      #chat-form button:hover {
+        background: var(--pink-soft);
+      }
+      #story {
+        margin-bottom: 1.5rem;
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        font-size: 0.95rem;
+        white-space: pre-wrap;
+      }
+      #story p {
+        white-space: pre-wrap;
+        margin: 0 0 1rem;
+      }
+      #story .player {
+        color: var(--pink);
+        font-style: italic;
+      }
+      #story .error {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <site-header></site-header>
+
+    <main>
+      <a class="back" href="../index.html">&larr; IAT 806</a>
+
+      <h1>Lab 09 — API Integration</h1>
+      <p class="tagline">
+        The Shadow House: an AI-narrated roleplay. Five keys, one house,
+        and something that doesn't want you to leave.
+      </p>
+
+      <!-- The story appears here, turn by turn. -->
+      <div id="story"></div>
+
+      <form id="chat-form">
+        <!-- Paste your key here. Never type it into your code: this repo is on GitHub. -->
+        <input id="key" type="password" placeholder="OpenRouter API key (sk-or-...)" autocomplete="new-password" />
+        <textarea id="action" rows="3" placeholder="What do you do? (open a drawer, look out the window, use the brass key...)"></textarea>
+        <button id="send" type="submit">Send</button>
+      </form>
+
+      <h2>Notes</h2>
+      <p>
+        Write about what you made: what you were going for, what was hard,
+        what you'd do differently. A few sentences is plenty.
+      </p>
+
+      <a
+        class="link"
+        href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/iat-806/lab-09"
+        >View the Codebase</a
+      >
+    </main>
+
+    <footer>
+      <p><a href="../index.html">&larr; Back to IAT 806</a></p>
+    </footer>
+
+    <script src="agent.js"></script>
+  </body>
+</html>
