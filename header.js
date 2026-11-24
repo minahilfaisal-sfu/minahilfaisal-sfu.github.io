@@ -49,3 +49,25 @@ if (!document.querySelector('link[rel="icon"]')) {
   icon.href = SITE_ROOT + "favicon.png";
   document.head.appendChild(icon);
 }
+
+// ===========================================================
+// explainer: an AI chat bubble on every page.
+// The library and its settings live in explainer/.
+// ===========================================================
+(function loadExplainer() {
+  const add = (path) =>
+    new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = SITE_ROOT + path;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+
+  add("explainer/explainer.iife.js")
+    // The dev key file only exists on your computer; skip it if missing
+    .then(() => (isLocal ? add("explainer/dev-key.local.js").catch(() => {}) : null))
+    .then(() => add("explainer/config.js"))
+    .catch((error) => console.warn("explainer did not load:", error));
+})();

@@ -1,0 +1,63 @@
+{
+  "name": "@minahilfaisal-sfu/explainer",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Drop-in AI assistant for any website: a chat bubble on every page that explains what the visitor is looking at",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://minahilfaisal-sfu.github.io/projects/iat-806/project/index.html",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io.git",
+    "directory": "projects/iat-806/project/explainer"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "CHANGELOG.md"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./proxy": {
+      "types": "./dist/server/proxy.d.ts",
+      "default": "./dist/proxy.js"
+    },
+    "./browser": "./dist/explainer.iife.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rimraf dist && vite build && vite build --config vite.iife.config.ts && tsc --project tsconfig.build.json",
+    "build:site": "pnpm run build && node scripts/copy-to-site.mjs",
+    "clean": "rimraf dist coverage",
+    "lint": "biome check . && tsc",
+    "lint:fix": "biome check --write",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ci": "vitest run --coverage",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "@lokalise/biome-config": "^5.0.0",
+    "@lokalise/tsconfig": "^5.0.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "happy-dom": "^20.0.0",
+    "rimraf": "^6.1.3",
+    "typescript": "7.0.2",
+    "vite": "^7.1.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.28.0"
+}

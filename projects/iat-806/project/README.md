@@ -1,113 +1,62 @@
-# 🎲 Project Proposal & Storyboard
+# Final Project — explainer
 
-## Project Description:
+A drop-in AI assistant for any website. A site adds one script and a little context about itself, and a chat bubble appears on every page. Visitors ask about what they're looking at, and the assistant answers from the page's own content plus the site's context, highlighting the parts of the page it's talking about.
 
-**Title**: Rootbound
+**Live demo:** every page of this website. Click the round icon in the bottom-right corner.
 
-**Storyline**: The city of Hungerfell is starving after the Great Drought. The player is an apprentice Tower-Warden who must build farming towers that feed the city without draining its water and power. This game is inspired by the mechanics of Dungeons and Dragons.
+**Code:** [`explainer/`](explainer/) in this folder (`projects/iat-806/project/explainer/`).
 
-**Guide (AI Chatbot)**: Sage, an ancient dragon who hoards seeds instead of gold. Sage is the Dungeon Master: wise, ominous, and always guiding the player toward better decisions.
+---
 
-**Research** **question**: Does a gamified, AI-guided experience help non-technical people understand complex multi-criteria tradeoffs better than plain charts, without feeling overwhelmed?
+## Research question
 
-## Sage - the Dungeon Master:
+Do AI explanations anchored to what's on the page help non-technical people understand complex information, and does a playful persona (Sage) change engagement, understanding or trust compared with a plain assistant?
 
-Sage is a wise but ominous dragon that speaks in omens, which will bring an eerie, mystical vibe to the game. However, every omen and dialogue from Sage will carry real information, eg, if Sage says *"the sky will crack open and weep heavily tonight"* that means there’s going to be a heavy thunderstorm, so account for its effect on crops, water and light. Sage basically leads like a DM, in that it builds the story-world, explains the rules, nudges players toward good choices, but in the end, it always has to be the player who makes the decisions for their farming towers. (haven’t decided pronouns for Sage yet, maybe fae / faer?)
+This connects to my thesis: the same library is meant to become the AI assistant in the D-SymBIA scenario comparison dashboard, and it puts into practice a guideline from my IAT 804 paper: explanations should point at the visualization they describe.
 
-Sage will have 4 roles (I might change this later based on scope / limitations of the project):
+## What it does
 
-1. **Storyteller:** Sage builds the world and Hungerfell reacts to choices (villagers thrive or leave, areas turn green or grey). Sage will remembers past choices and all choices affect the visual representation of the world, including on the tower, sky and surroundings.
-2. **Rules keeper:** Players can turn to Sage to explain how things work, like the stars in the sky, sigils (data visualizations like graphs), the Ouroboros (visual representation of resource circularity), and artifacts (tools, BIA systems, etc).
-3. **Advisor:** Sage previews consequences, points out tradeoffs, recommends. Examples of what players can ask:
-    - *"Why isn't my water being reused?"*
-    - *"What does the sigil mean and how can I improve it?"*
-    - *"I rolled and got two options. How do they help me?"*
-4. **Questioner:** To keep players thinking, and making choices instead of blindly following suggestions, Sage will sometimes answers with a question (*"What matters more tonight, bread or water?"*). Sage will also never give the solution outright to the user.
+- **Chat bubble on every page.** Its corner and offset are configurable.
+- **Reads the page.** Headings, paragraphs, lists, tables, image alt text and canvases. It skips navigation, footers, forms, hidden content and anything marked `data-explainer-ignore`.
+- **Knows the site.** The site owner gives a description, audience, glossary, list of pages and FAQ once.
+- **Highlights its sources.** Answers outline the parts of the page they refer to; 📍 pins re-show them.
+- **Follow-up chips and a text box.** Chips are suggested by the AI; links can only go to pages the site lists.
+- **Follows you across pages.** The chat is kept for the browser tab and notes when you move to a new page.
+- **Sage persona toggle.** The same facts, plus an ominous one-line omen and a darker, glowing theme.
+- **Safe by design.** The page text is treated as data, never as instructions. Replies are checked before they're shown. Free OpenRouter models are reached through a small proxy that keeps the API key off the public site.
 
-Sage (AI chatbot) will be designed to use the following structure for all messages / dialogue.
+## How it works
 
-1. Omen (an ominous / eerie message)
-2. Plain explanation (what's actually happening, in simple words, decoding the message)
-3. Question + chips (which will keep the player exploring / engaged)
+```
+Visitor asks ──► read the page (tagged blocks b0, b1, …)
+             ──► build prompt: rules + site info + page data + recent chat
+             ──► proxy (holds the key) ──► OpenRouter free model
+             ──► check the JSON reply: drop invented highlights and links
+             ──► show answer, highlights, follow-up chips (+ omen if Sage)
+```
 
-(Optional) We’ll also highlight the relevant element in the world while Sage speaks, for example, a tower floor, or some vines growing on the tower wall, or water flow, etc.
+The model only explains; it can only point at blocks that really exist on the page.
 
-**Workflow:**
+## Built so far
 
-1. Sage sets the scene with an omen + context.
-2. Players can then:
-    - Decide directly and choose from the options / chips.
-    - Ask Sage and get advice tailored to their quest and tower so far.
-    - Roll the dice (like in a board game) when stuck and Sage will generates 2–3 options (Artifacts) for them.
-3. Tower updates based on their choices, and the world changes. Sage can explain the effects.
-4. Sage ends with a question + chips per prompt / decision.
+| Part | Status |
+|---|---|
+| Widget: bubble, panel, chips, text box, Sage toggle, reset | ✅ |
+| Page reading with ignore rules and a size budget | ✅ |
+| Chat history across pages | ✅ |
+| Highlights on page text | ✅ |
+| Proxy for Cloudflare Workers / Vercel Edge | ✅ |
+| Script-tag build + npm (ESM + types) build | ✅ |
+| Unit tests (31) + browser test | ✅ |
+| Deployed proxy for the live site | ⏳ |
+| Area select ("Select" button, Part 2) | ⏳ shown as "coming soon" |
+| Exact chart registration (bars/points) | 🔮 future work |
+| Small user study (plain vs Sage) | ⏳ |
 
-## The Farming Tower
+## Tech
 
-We’ll have 6 parts of the tower that can be influenced by player choices that correspond directly with BIA scenario variables.
+TypeScript, Vite (library + single-file builds), Vitest with happy-dom, Biome, Shadow DOM for the widget, OpenRouter (`openrouter/free`) for the model, and a Cloudflare Worker proxy.
 
-1. The Ground: locations like rooftop, facade, indoors
-2. The Seeds: crops like leafy greens, fruits, mushrooms, vegetables etc
-3. The Roots: BIA growing systems, like greenhouses, soil-beds, hydroponics
-4. The Veins: Water like grey water, fresh water, rain water
-5. The Fire: Energy, like solar, grid, wind
-6. The Loop: Circularity: composting, reuse, water and energy reuse
+## History
 
-There are sigils on the doors of these farming towers which will basically be radar chart in which each spike is a KPI. KPIs can be yield, energy, water use, cost, carbon emissions, resource circularity etc (I will come up with mythical names for these later to better fit the game). Users can also review a choice before committing by looking at what their towers sigil would look like with the choice taken.
-
-## Storyboards
-
-### Frame 1 : Title Screen
-
-**Description:** A gloomy Hungerfell skyline is shown and cracked dry earth, with an empty, broken farming tower in the back and the Rootbound logo in the sky.
-**Interaction:** `[Begin]`
-
-![Frame 1](./storyboard/1.jpeg)
-
-### Frame 2: Sage Wakes
-
-**Description:** Sage is shown hoarding seeds in a cave. A scroll displays the dialogue, descriptions, a chat bar, and dice interactions + option chips.
-
-*"You came. They always come when the bread runs out."*
-The city is starving. You will build a tower that feeds it, without drinking it dry.
-**Where shall your tower stand?**
-
-**Interactions:** `[→ The Ground]` `[Who are you?]` `[What is a tower?]`
-
-![Frame 2](./storyboard/2.jpeg)
-
-### Frame 3: The Tower
-
-**Description:** Once the ground is chosen, a map of three sites in the tower is shown: a rooftop, a building facade, a dark indoor floor. Light rays can be shown in appropriate places.
-
-*"The light falls unevenly here. Some places are blessed. Some are forgotten."*
-Rooftops get the most sun but face storms. Indoor floors are sheltered but need more energy for light.                               
-**Do you fear the storm, or the dark?**
-
-**Interactions:** `[Rooftop]` `[Facade]` `[Indoor]` `[Ask Sage - Chatbox]` `[🎲 Let fate decide]`
-
-![Frame 3](./storyboard/3.jpeg)
-
-### Frame 4: Ask Sage Interaction
-
-**Description:** The player's text box is shown with the question *"which one should I pick?"*. The rooftop site glowing (recommended by the AI chatbot - Sage).
-
-*"You seek bread above all. Then go where the light is."*
-For your quest (feeding the village), the rooftop gives the most free light. Watch the weather though.
-**Will you trust me?**
-
-**Interactions:** `[Rooftop]` `[Why not indoor?]` `[What storms?]`  `[🎲 Let fate decide]`
-
-![Frame 4](./storyboard/4.jpeg)
-
-### Frame 5: Dice Roll Interaction
-
-**Description:** The Player is stuck on choosing options. So they click the “roll dice” interaction which causes three artifact cards to be shown, with an option to view predicted sigils (radar chart - for evaluations of benefits or losses), as well as a recommended card highlighted + an 👍 emoji.
-
-*"Fate has spoken. Three gifts lie before you. Only one may be taken."*
-These are three growing systems. The ghost shapes show how your tower would change with each.
-**Which shape do you want your tower to wear?**
-
-**Interactions:** `[Hydroponics]` `[Aquaponics]` `[Soil beds]` `[Explain all three]`
-
-![Frame 5](./storyboard/5.jpeg)
+The project started as **Rootbound**, a gamified dungeon-master game where an AI dragon, Sage, guides players through building farming towers. To fit the term, it became this library instead; Sage lives on as the optional persona.

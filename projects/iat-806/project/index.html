@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Final Project — Minahil Faisal</title>
+
+    <!-- Three folders deep, so three levels up to the stylesheet -->
+    <link rel="stylesheet" href="../../../style.css" />
+    <!-- Shared header: <site-header> (also loads explainer) -->
+    <script src="../../../header.js"></script>
+
+    <style>
+      main pre {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        padding: 12px 14px;
+        overflow-x: auto;
+        font-size: 0.85em;
+        line-height: 1.5;
+      }
+      main code {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-size: 0.9em;
+      }
+      .demo-callout {
+        border-left: 4px solid var(--green, #3d6b4f);
+        padding: 10px 14px;
+        background: rgba(61, 107, 79, 0.08);
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <site-header></site-header>
+
+    <main data-explainer-context="This is the page about explainer itself, Minahil's IAT 806 final project. The chat bubble the visitor is using right now is the project.">
+      <a class="back" href="../index.html">&larr; IAT 806</a>
+
+      <h1>Final Project — explainer</h1>
+      <p class="tagline">
+        A drop-in AI assistant that explains any web page, built as an npm library.
+      </p>
+
+      <p class="demo-callout">
+        <strong>Try it now:</strong> click the round chat icon in the
+        bottom-right corner. The assistant runs on every page of this site,
+        including this one. Ask it what this page is about, or flip the
+        <em>Sage</em> switch for a spookier guide.
+      </p>
+
+      <h2>What it does</h2>
+      <p>
+        A website adds one script and a short description of itself, and a chat
+        bubble appears on every page. Visitors can ask about whatever they're
+        looking at. The assistant reads the page, answers in plain language,
+        outlines the parts of the page it's talking about, and suggests
+        follow-up questions. The conversation follows you from page to page.
+      </p>
+      <ul>
+        <li>Reads headings, text, lists, tables and image descriptions; skips menus, footers and forms.</li>
+        <li>Highlights the exact paragraph or heading an answer comes from.</li>
+        <li>Suggested follow-up questions, plus a text box for your own.</li>
+        <li><strong>Sage</strong> persona: the same facts, with an ominous omen and a darker theme.</li>
+        <li>Keeps the AI key secret through a small proxy, and checks every reply before showing it.</li>
+      </ul>
+
+      <h2>Why</h2>
+      <p>
+        Complex pages and dashboards can overwhelm people without a technical
+        background. My research question is whether explanations that point at
+        what's on the page help non-experts understand it, and whether a
+        playful persona changes engagement or trust. This library is also the
+        first building block of the AI assistant for my thesis project, a
+        dashboard for comparing building-integrated agriculture scenarios.
+      </p>
+
+      <h2>How I built it</h2>
+      <p>
+        I started from a <strong>public template</strong>: Lokalise's
+        open-source <code>shared-ts-libs</code> repository, a monorepo for
+        publishing TypeScript libraries to npm. It came with the build,
+        testing, linting and release setup (pnpm, Turborepo, Vite, Vitest,
+        Biome and Changesets), so I could focus on the library itself. I kept
+        its tooling and conventions for a standalone package, whose source
+        lives in this site's repository under
+        <code>projects/iat-806/project/explainer/</code>.
+      </p>
+      <ol>
+        <li><strong>Read the page:</strong> walk the main content and tag each readable block (<code>b0</code>, <code>b1</code>, …).</li>
+        <li><strong>Build the prompt:</strong> rules, the site's description, the page data (marked as untrusted) and the recent chat.</li>
+        <li><strong>Ask the model:</strong> through a proxy to a free model on OpenRouter.</li>
+        <li><strong>Check the reply:</strong> drop highlights for blocks that don't exist and links the site didn't list.</li>
+        <li><strong>Show it:</strong> answer, highlights and chips, in a widget isolated with Shadow DOM so the site's styles can't break it.</li>
+      </ol>
+      <p>
+        It's written in TypeScript and builds two ways: a single file for a
+        plain <code>&lt;script&gt;</code> tag (what this site uses), and an npm
+        package with types for React, Vue or any bundled app. It has 31 unit
+        tests and was checked in a real browser.
+      </p>
+      <p>
+        The project began as <em>Rootbound</em>, a dungeon-master style game
+        where an AI dragon named Sage guided players.
+        I narrowed it to this library to fit the term, and Sage lives on as the persona.
+      </p>
+
+      <h2>How to use it</h2>
+      <p>On a plain HTML site, add the file and a config on every page:</p>
+      <pre><code>&lt;script src="explainer.iife.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  Explainer.init({
+    endpoint: "https://your-proxy.workers.dev",
+    position: "bottom-right",
+    site: {
+      name: "My Site",
+      description: "What this site is for.",
+      pages: { "/about.html": "About the project" },
+    },
+  });
+&lt;/script&gt;</code></pre>
+      <p>In an app with a bundler:</p>
+      <pre><code>import { init } from "@minahilfaisal-sfu/explainer";
+
+init({ endpoint: "https://your-proxy.workers.dev", site: { name: "My App" } });</code></pre>
+      <p>
+        Mark sections with <code>data-explainer-context="…"</code> to give the
+        assistant hints, or <code>data-explainer-ignore</code> to keep them private.
+      </p>
+
+      <h2>Status</h2>
+      <p>
+        Working: the widget, page reading, highlights, chat across pages, the
+        Sage persona and the proxy. Next: area select (the dashed
+        <em>Select</em> button), exact highlighting of chart bars and points,
+        and a small study comparing the plain and Sage personas.
+      </p>
+
+      <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/tree/main/projects/iat-806/project/explainer">View the Codebase</a>
+      <a class="link" href="https://github.com/minahilfaisal-sfu/minahilfaisal-sfu.github.io/blob/main/projects/iat-806/project/README.md">Full Project Details</a>
+    </main>
+
+    <footer>
+      <p><a href="../index.html">&larr; Back to IAT 806</a></p>
+    </footer>
+  </body>
+</html>

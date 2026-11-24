@@ -1,0 +1,7 @@
+{
+  "extends": "@lokalise/tsconfig/bundler-dom",
+  "include": ["src/**/*", "vite.config.ts", "vite.iife.config.ts", "vitest.config.ts"],
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
+  }
+}

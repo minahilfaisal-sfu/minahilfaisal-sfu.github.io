@@ -1,0 +1,9 @@
+name = "explainer-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+
+[vars]
+# Comma-separated list of sites allowed to use this proxy
+ALLOWED_ORIGINS = "https://minahilfaisal-sfu.github.io"
+# Optional: models the widget may request (first is the default)
+MODELS = "openrouter/free"
