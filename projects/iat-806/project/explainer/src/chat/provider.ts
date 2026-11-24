@@ -15,6 +15,10 @@ export class ProviderError extends Error {
 export type ProviderOptions = {
   endpoint?: string
   devApiKey?: string
+  /** The visitor's own OpenRouter key, added in the widget's settings. */
+  userApiKey?: string
+  /** Whether visitors may add their own key (changes the "not connected" message). */
+  allowUserKey?: boolean
   model?: string
   timeoutMs?: number
   fetchImpl?: typeof fetch
@@ -25,7 +29,21 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0'])
 export const isLocalPage = (hostname: string): boolean =>
   LOCAL_HOSTS.has(hostname) || hostname.endsWith('.localhost')
 
-/** Which way requests will go, or why none can. */
+export const NEEDS_KEY_MESSAGE =
+  'To start, add your free OpenRouter API key in settings (the ⚙️ button above).'
+
+const noTransportReason = (opts: ProviderOptions): string => {
+  if (opts.allowUserKey) return NEEDS_KEY_MESSAGE
+  if (opts.devApiKey) {
+    return 'This assistant only has a development key, which is turned off on public pages to keep it private. The site owner needs to set an endpoint.'
+  }
+  return 'This assistant is not connected yet (no endpoint configured).'
+}
+
+/**
+ * Which way requests will go, or why none can. In order:
+ * the visitor's own key, a dev key on localhost, then the site's endpoint.
+ */
 export const resolveTransport = (
   opts: ProviderOptions,
   hostname: string,
@@ -33,23 +51,17 @@ export const resolveTransport = (
   | { kind: 'endpoint'; url: string }
   | { kind: 'direct'; key: string }
   | { kind: 'none'; reason: string } => {
+  if (opts.allowUserKey && opts.userApiKey) return { kind: 'direct', key: opts.userApiKey }
   if (opts.devApiKey && isLocalPage(hostname)) return { kind: 'direct', key: opts.devApiKey }
   if (opts.endpoint) return { kind: 'endpoint', url: opts.endpoint }
-  if (opts.devApiKey) {
-    return {
-      kind: 'none',
-      reason:
-        'This assistant only has a development key, which is turned off on public pages to keep it private. The site owner needs to set an endpoint.',
-    }
-  }
-  return { kind: 'none', reason: 'This assistant is not connected yet (no endpoint configured).' }
+  return { kind: 'none', reason: noTransportReason(opts) }
 }
 
 const friendlyStatus = (status: number): string => {
   if (status === 429)
     return 'The assistant is busy or has reached its daily limit. Please try again later.'
-  if (status === 401 || status === 403)
-    return 'The assistant is not allowed to answer from this site right now.'
+  if (status === 401) return 'That API key was not accepted. Check it in settings (⚙️).'
+  if (status === 403) return 'The assistant is not allowed to answer from this site right now.'
   return `The assistant could not answer (error ${status}).`
 }
 
@@ -68,7 +80,7 @@ const send = (
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${transport.key}`,
-          'X-Title': 'explainer (dev)',
+          'X-Title': 'explainer',
         },
         body: JSON.stringify({ ...body, temperature: 0.3 }),
       })

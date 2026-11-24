@@ -91,6 +91,36 @@ describe('Explainer', () => {
     )
   })
 
+  it('asks for a key, saves it, then answers the waiting question with it', async () => {
+    localStorage.clear()
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ choices: [{ message: { content: '{"answer":"Done."}' } }] })),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    assistant = new Explainer({ site: { name: 'Keys' }, allowUserKey: true })
+    const root = shadow(assistant)
+    expect(root.querySelector('.key-prompt')).not.toBeNull()
+
+    await assistant.ask('What is this?')
+    const settings = root.querySelector('.settings') as HTMLFormElement
+    expect(settings.hidden).toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    const keyInput = settings.querySelector('input[name="apiKey"]') as HTMLInputElement
+    keyInput.value = 'sk-or-v1-visitor'
+    settings.dispatchEvent(new Event('submit', { cancelable: true }))
+    await vi.waitFor(() =>
+      expect(root.querySelector('.msg.assistant')?.textContent).toContain('Done.'),
+    )
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toContain('openrouter.ai')
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer sk-or-v1-visitor')
+    expect(settings.hidden).toBe(true)
+    expect(localStorage.length).toBe(0)
+  })
+
   it('explains when it is not connected', async () => {
     assistant = new Explainer({ site: { name: 'X' } })
     await assistant.ask('Anything?')

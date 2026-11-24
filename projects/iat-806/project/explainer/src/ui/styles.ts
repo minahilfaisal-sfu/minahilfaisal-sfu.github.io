@@ -137,6 +137,23 @@ button { font: inherit; cursor: pointer; }
 .select { border: 1px solid var(--pa-border); background: none; color: var(--pa-muted); border-radius: 10px; padding: 8px; display: grid; place-items: center; }
 .select svg { width: 18px; height: 18px; }
 .select:disabled { opacity: 0.45; cursor: not-allowed; }
+.settings { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.settings[hidden], .messages[hidden], .chips[hidden], .composer[hidden], .privacy[hidden] { display: none; }
+.settings-title { font-weight: 600; margin: 0; }
+.settings .notice { margin: 0; }
+.settings .small { font-size: 11px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.field input { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--pa-border); background: var(--pa-bg); color: var(--pa-fg); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.get-key { font-size: 13px; color: var(--pa-accent); align-self: flex-start; }
+.settings-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.settings-row button { border-radius: 8px; padding: 7px 12px; font-size: 13px; }
+.settings-row .primary { border: none; background: var(--pa-accent); color: #fff; }
+.settings-row .secondary { border: 1px solid var(--pa-border); background: var(--pa-soft); color: var(--pa-fg); }
+.settings-row button:disabled { opacity: 0.5; cursor: default; }
+.settings-status { font-size: 13px; color: var(--pa-accent); margin: 0; min-height: 1em; }
+.key-prompt { background: var(--pa-soft); border: 1px dashed var(--pa-accent); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.key-prompt p { margin: 0; }
 .privacy { font-size: 11px; color: var(--pa-muted); padding: 0 12px 8px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 `
@@ -148,6 +165,8 @@ export const ICONS = {
   send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   select:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>',
+  settings:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   reset:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
 }

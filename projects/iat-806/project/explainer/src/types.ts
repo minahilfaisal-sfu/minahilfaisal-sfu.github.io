@@ -33,6 +33,12 @@ export type AssistantConfig = {
    */
   endpoint?: string
   /**
+   * Let visitors add their own OpenRouter key in a ⚙️ settings view.
+   * Their key stays in their browser and is sent only to OpenRouter.
+   * Works with no backend at all. Default false.
+   */
+  allowUserKey?: boolean
+  /**
    * OpenRouter key for LOCAL DEVELOPMENT ONLY. Ignored unless the page runs on
    * localhost, because any key in a public page can be copied by anyone.
    */
@@ -116,3 +122,4 @@ export type AssistantEvent =
   | { type: 'persona'; persona: PersonaName; path: string }
   | { type: 'highlight'; id: string; path: string }
   | { type: 'error'; message: string; path: string }
+  | { type: 'settings'; action: 'open' | 'save' | 'remove'; path: string }

@@ -7,9 +7,13 @@
 // ===========================================================
 
 Explainer.init({
-  // Your proxy (Cloudflare Worker) URL. It keeps the OpenRouter key
-  // secret. Until it's set, the bubble works only on localhost
-  // (with dev-key.local.js) and explains it's not connected elsewhere.
+  // Visitors add their own free OpenRouter key with the ⚙️ button in the
+  // chat. Their key stays in their browser and is only sent to OpenRouter,
+  // so this site needs no server and never sees anyone's key.
+  allowUserKey: true,
+
+  // Optional: a proxy that holds YOUR key, so visitors don't need one
+  // (see README.md, "Optional: a proxy"). Leave empty to use visitor keys.
   endpoint: "", // e.g. "https://explainer-proxy.<you>.workers.dev"
 
   // Only used when previewing on localhost (see dev-key.example.js)

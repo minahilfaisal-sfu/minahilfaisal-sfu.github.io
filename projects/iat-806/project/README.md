@@ -2,7 +2,7 @@
 
 A drop-in AI assistant for any website. A site adds one script and a little context about itself, and a chat bubble appears on every page. Visitors ask about what they're looking at, and the assistant answers from the page's own content plus the site's context, highlighting the parts of the page it's talking about.
 
-**Live demo:** every page of this website. Click the round icon in the bottom-right corner.
+**Live demo:** every page of this website. Click the round icon in the bottom-right corner, then add a free [OpenRouter key](https://openrouter.ai/keys) with ⚙️ the first time.
 
 **Code:** [`explainer/`](explainer/) in this folder (`projects/iat-806/project/explainer/`).
 
@@ -23,14 +23,14 @@ This connects to my thesis: the same library is meant to become the AI assistant
 - **Follow-up chips and a text box.** Chips are suggested by the AI; links can only go to pages the site lists.
 - **Follows you across pages.** The chat is kept for the browser tab and notes when you move to a new page.
 - **Sage persona toggle.** The same facts, plus an ominous one-line omen and a darker, glowing theme.
-- **Safe by design.** The page text is treated as data, never as instructions. Replies are checked before they're shown. Free OpenRouter models are reached through a small proxy that keeps the API key off the public site.
+- **Safe by design.** The page text is treated as data, never as instructions. Replies are checked before they're shown. Visitors use their own free OpenRouter key (stored only in their browser, sent only to OpenRouter), so the site needs no server; a site can instead run the included proxy to hold its own key.
 
 ## How it works
 
 ```
 Visitor asks ──► read the page (tagged blocks b0, b1, …)
              ──► build prompt: rules + site info + page data + recent chat
-             ──► proxy (holds the key) ──► OpenRouter free model
+             ──► OpenRouter free model (visitor's own key, or the site's proxy)
              ──► check the JSON reply: drop invented highlights and links
              ──► show answer, highlights, follow-up chips (+ omen if Sage)
 ```
@@ -48,14 +48,14 @@ The model only explains; it can only point at blocks that really exist on the pa
 | Proxy for Cloudflare Workers / Vercel Edge | ✅ |
 | Script-tag build + npm (ESM + types) build | ✅ |
 | Unit tests (31) + browser test | ✅ |
-| Deployed proxy for the live site | ⏳ |
+| ⚙️ Settings: visitors add their own OpenRouter key | ✅ |
 | Area select ("Select" button, Part 2) | ⏳ shown as "coming soon" |
 | Exact chart registration (bars/points) | 🔮 future work |
 | Small user study (plain vs Sage) | ⏳ |
 
 ## Tech
 
-TypeScript, Vite (library + single-file builds), Vitest with happy-dom, Biome, Shadow DOM for the widget, OpenRouter (`openrouter/free`) for the model, and a Cloudflare Worker proxy.
+TypeScript, Vite (library + single-file builds), Vitest with happy-dom, Biome, Shadow DOM for the widget, OpenRouter (`openrouter/free`) for the model, and an optional Cloudflare Worker proxy.
 
 ## History
 

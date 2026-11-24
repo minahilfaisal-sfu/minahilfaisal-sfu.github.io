@@ -1,6 +1,13 @@
 import { Conversation } from './chat/conversation.ts'
+import { KeyStore } from './chat/keyStore.ts'
 import { buildMessages } from './chat/prompt.ts'
-import { complete, ProviderError, resolveTransport } from './chat/provider.ts'
+import {
+  complete,
+  DEFAULT_MODEL,
+  ProviderError,
+  type ProviderOptions,
+  resolveTransport,
+} from './chat/provider.ts'
 import { fallbackReply, parseReply } from './chat/schema.ts'
 import { extractPage } from './context/page.ts'
 import type {
@@ -11,7 +18,9 @@ import type {
   PageSnapshot,
   PersonaName,
 } from './types.ts'
+import { el } from './ui/dom.ts'
 import { clearHighlights, showHighlights } from './ui/highlight.ts'
+import { createSettingsView } from './ui/settings.ts'
 import { ICONS, positionVars, WIDGET_CSS } from './ui/styles.ts'
 
 const DEFAULT_STARTERS = [
@@ -22,23 +31,14 @@ const DEFAULT_STARTERS = [
 
 type AskVia = 'typed' | 'chip' | 'starter'
 
-const el = <K extends keyof HTMLElementTagNameMap>(
-  doc: Document,
-  tag: K,
-  attrs: Record<string, string> = {},
-  text?: string,
-): HTMLElementTagNameMap[K] => {
-  const node = doc.createElement(tag)
-  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v)
-  if (text !== undefined) node.textContent = text
-  return node
-}
-
 /** The widget: a launcher bubble and a chat panel, mounted in a Shadow DOM. */
 export class Explainer {
   readonly config: AssistantConfig
   private readonly doc: Document
   private readonly conversation: Conversation
+  private readonly keys: KeyStore
+  private pendingQuestion: string | undefined
+  private settingsOpen = false
   private persona: PersonaName
   private page: PageSnapshot
   private busy = false
@@ -55,19 +55,23 @@ export class Explainer {
   private toggleBtn: HTMLButtonElement | undefined
   private pageNameEl!: HTMLElement
   private liveEl!: HTMLElement
+  private chatEls: HTMLElement[] = []
+  private settings: ReturnType<typeof createSettingsView> | undefined
 
   constructor(config: AssistantConfig, doc: Document = document) {
     if (!config?.site?.name) throw new Error('explainer: config.site.name is required')
     this.config = config
     this.doc = doc
     const view = doc.defaultView
-    let storage: Storage | undefined
-    try {
-      storage = view?.sessionStorage
-    } catch {
-      storage = undefined
+    const storage = (name: 'sessionStorage' | 'localStorage'): Storage | undefined => {
+      try {
+        return view?.[name]
+      } catch {
+        return undefined
+      }
     }
-    this.conversation = new Conversation(config.site.name, storage)
+    this.conversation = new Conversation(config.site.name, storage('sessionStorage'))
+    this.keys = new KeyStore({ local: storage('localStorage'), session: storage('sessionStorage') })
     this.persona = this.conversation.persona ?? config.persona ?? 'plain'
     this.page = this.readPage()
     this.mount()
@@ -187,6 +191,18 @@ export class Explainer {
       header.appendChild(this.toggleBtn)
     }
 
+    if (config.allowUserKey) {
+      const gear = el(doc, 'button', {
+        class: 'icon-btn',
+        type: 'button',
+        'aria-label': 'Settings: add your API key',
+        title: 'Settings: add your API key',
+      })
+      gear.innerHTML = ICONS.settings
+      gear.addEventListener('click', () => this.showSettings(!this.settingsOpen))
+      header.appendChild(gear)
+    }
+
     const resetBtn = el(doc, 'button', {
       class: 'icon-btn',
       type: 'button',
@@ -249,7 +265,18 @@ export class Explainer {
       'Your questions and the text of this page are sent to an AI model to answer.',
     )
 
-    this.panel.append(header, this.messagesEl, this.chipsEl, form, privacy, this.liveEl)
+    this.chatEls = [this.messagesEl, this.chipsEl, form, privacy]
+    this.panel.append(header, ...this.chatEls, this.liveEl)
+    if (config.allowUserKey) {
+      this.settings = createSettingsView({
+        doc,
+        keys: this.keys,
+        defaultModel: config.model ?? DEFAULT_MODEL,
+        onChange: (key) => this.onKeyChange(key),
+        onBack: () => this.showSettings(false),
+      })
+      this.panel.insertBefore(this.settings.view, this.liveEl)
+    }
     this.root.append(this.launcher, this.panel)
     doc.body.appendChild(this.host)
   }
@@ -294,6 +321,55 @@ export class Explainer {
     }
   }
 
+  private providerOptions(): ProviderOptions {
+    return {
+      endpoint: this.config.endpoint,
+      devApiKey: this.config.devApiKey,
+      userApiKey: this.keys.key,
+      allowUserKey: this.config.allowUserKey === true,
+      model: this.keys.model ?? this.config.model,
+      timeoutMs: this.config.timeoutMs,
+    }
+  }
+
+  private hostname(): string {
+    return this.doc.defaultView?.location.hostname ?? ''
+  }
+
+  /** True when visitors must add their own key before anything can be asked. */
+  private needsKey(): boolean {
+    return (
+      this.config.allowUserKey === true &&
+      resolveTransport(this.providerOptions(), this.hostname()).kind === 'none'
+    )
+  }
+
+  /** Swap the chat for the settings view (or back). */
+  showSettings(show: boolean) {
+    if (!this.settings) return
+    if (show && !this.isOpen) this.setOpen(true)
+    this.settingsOpen = show
+    this.settings.refresh()
+    this.settings.view.hidden = !show
+    for (const part of this.chatEls) part.hidden = show
+    if (show) {
+      this.settings.focus()
+      this.emit({ type: 'settings', action: 'open', path: this.page.path })
+    } else {
+      this.input.focus()
+    }
+  }
+
+  private onKeyChange(key: string | undefined) {
+    this.emit({ type: 'settings', action: key ? 'save' : 'remove', path: this.page.path })
+    this.renderHistory()
+    if (!key) return
+    this.showSettings(false)
+    const pending = this.pendingQuestion
+    this.pendingQuestion = undefined
+    if (pending) void this.handleAsk(pending, 'typed')
+  }
+
   private renderHistory() {
     this.messagesEl.replaceChildren()
     const turns = this.conversation.turns
@@ -305,6 +381,7 @@ export class Explainer {
         `Hi! Ask me anything about this page on ${this.config.site.name}.`,
       )
       this.messagesEl.appendChild(intro)
+      if (this.needsKey()) this.appendKeyPrompt()
       this.renderChips(
         (this.config.starters ?? DEFAULT_STARTERS).map((label) => ({ label })),
         'starter',
@@ -333,6 +410,22 @@ export class Explainer {
       const last = turns[turns.length - 1]
       this.renderChips(last?.role === 'assistant' ? last.reply.followUps : [], 'chip')
     }
+  }
+
+  private appendKeyPrompt() {
+    const box = el(this.doc, 'div', { class: 'key-prompt' })
+    box.appendChild(
+      el(
+        this.doc,
+        'p',
+        {},
+        'To start, add your free OpenRouter API key. It stays in your browser.',
+      ),
+    )
+    const open = el(this.doc, 'button', { class: 'chip', type: 'button' }, '⚙️ Add API key')
+    open.addEventListener('click', () => this.showSettings(true))
+    box.appendChild(open)
+    this.messagesEl.appendChild(box)
   }
 
   private appendTurn(turn: ChatTurn, samePage: boolean) {
@@ -389,6 +482,12 @@ export class Explainer {
     const text = question.trim().slice(0, 500)
     if (!text || this.busy) return
     if (!this.isOpen) this.setOpen(true)
+    if (this.needsKey()) {
+      // Keep the question and ask it as soon as a key is saved
+      this.pendingQuestion = text
+      this.showSettings(true)
+      return
+    }
 
     // Re-read the page so answers match what's on screen now
     this.page = this.readPage()
@@ -424,16 +523,7 @@ export class Explainer {
         question: text,
         extra,
       })
-      const raw = await complete(
-        messages,
-        {
-          endpoint: this.config.endpoint,
-          devApiKey: this.config.devApiKey,
-          model: this.config.model,
-          timeoutMs: this.config.timeoutMs,
-        },
-        this.doc.defaultView?.location.hostname ?? '',
-      )
+      const raw = await complete(messages, this.providerOptions(), this.hostname())
       reply = parseReply(raw, {
         blockIds: new Set(this.page.blocks.map((b) => b.id)),
         allowedLinks: new Set(Object.keys(this.config.site.pages ?? {})),
@@ -474,10 +564,7 @@ export class Explainer {
 
   /** Whether requests can be made from this page at all (for diagnostics). */
   get status(): string {
-    const t = resolveTransport(
-      { endpoint: this.config.endpoint, devApiKey: this.config.devApiKey },
-      this.doc.defaultView?.location.hostname ?? '',
-    )
+    const t = resolveTransport(this.providerOptions(), this.hostname())
     return t.kind === 'none' ? t.reason : `ready (${t.kind})`
   }
 }

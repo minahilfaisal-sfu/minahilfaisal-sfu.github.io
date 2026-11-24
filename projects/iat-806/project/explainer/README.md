@@ -8,7 +8,7 @@ A drop-in AI assistant for any website. Add one script and a little context abou
 - Follow-up chips plus a text box; links only to pages you list
 - Optional **Sage** persona: same facts, spookier voice
 - Shadow DOM, so your CSS and the widget's never clash
-- Free models through [OpenRouter](https://openrouter.ai), with a tiny proxy to keep your key secret
+- Free models through [OpenRouter](https://openrouter.ai): visitors bring their own key (⚙️ settings, no backend needed), or you run a tiny proxy with yours
 
 ## Quick start (plain HTML)
 
@@ -16,7 +16,7 @@ A drop-in AI assistant for any website. Add one script and a little context abou
 <script src="explainer.iife.js"></script>
 <script>
   Explainer.init({
-    endpoint: 'https://your-proxy.workers.dev',
+    allowUserKey: true, // visitors add their own OpenRouter key in ⚙️ settings
     site: {
       name: 'My Site',
       description: 'What the site is for.',
@@ -36,7 +36,8 @@ Add it to a file every page already loads (a shared header or layout) to get it 
 | Option                | Default                   | What it does                                                           |
 | --------------------- | ------------------------- | ---------------------------------------------------------------------- |
 | `site`                | required                  | `name`, `description`, `audience`, `glossary`, `pages`, `faq`, `notes` |
-| `endpoint`            | —                         | Your proxy URL (required on public sites)                              |
+| `allowUserKey`        | `false`                   | Show ⚙️ settings so visitors can add their own OpenRouter key          |
+| `endpoint`            | —                         | Your proxy URL, if you'd rather pay for visitors' questions            |
 | `devApiKey`           | —                         | OpenRouter key for **localhost only**; ignored everywhere else         |
 | `model`               | `openrouter/free`         | Any OpenRouter model id                                                |
 | `position` / `offset` | `bottom-right` / `20, 20` | Where the bubble sits                                                  |
@@ -56,9 +57,21 @@ Add it to a file every page already loads (a shared header or layout) to get it 
 <section data-explainer-ignore>Never sent to the AI</section>
 ```
 
-## Keep your key secret: the proxy
+## API keys: two ways to connect
 
-Anything in a public page can be copied, including API keys. Run the included proxy (Cloudflare Workers, Vercel Edge, Deno or Bun) and point `endpoint` at it:
+Anything in a public web page can be copied, so never put your own key in the page.
+
+### 1. Visitors bring their own key (no backend)
+
+Set `allowUserKey: true`. The panel gets a ⚙️ button where visitors paste their free OpenRouter key (with a link to get one), pick a model, and choose whether to remember it on that device. Until they do, the chat shows a friendly "add your key" prompt, and a question typed before that is asked as soon as the key is saved.
+
+- The key stays in the visitor's browser (sessionStorage, or localStorage with "Remember") and is sent only to OpenRouter.
+- Your site needs no server and never sees anyone's key.
+- Trade-off: each visitor needs an OpenRouter account. A saved key can be read by any script running on your site, so only enable this on sites you trust (it's off by default, and "Remember" starts unchecked).
+
+### 2. A proxy that holds your key (smoother for visitors)
+
+Run the included proxy (Cloudflare Workers, Vercel Edge, Deno or Bun) and point `endpoint` at it:
 
 ```ts
 import { createProxyHandler } from '@minahilfaisal-sfu/explainer/proxy'
@@ -75,6 +88,8 @@ export default {
 
 It only accepts requests from your sites, limits each visitor to a few requests a minute, only allows the models you list, and never returns the key. See `examples/cloudflare-worker`.
 
+You can use both: a visitor's own key wins when they've added one; otherwise the proxy is used. On `localhost`, `devApiKey` is used for development.
+
 > OpenRouter's free models allow 20 requests a minute and 50 a day per account (1,000 a day once the account has bought $10 of credits).
 
 ## API
@@ -85,6 +100,7 @@ const assistant = await init(config)
 assistant.open()
 assistant.ask('What is this page about?')
 assistant.setPersona('sage')
+assistant.showSettings(true) // open the ⚙️ key settings
 assistant.refresh() // after changing page content without a reload
 ```
 
@@ -115,9 +131,9 @@ src/
   browser.ts           entry for the single-file <script> build
   types.ts             every option and type
   assistant.ts         the widget: launcher, panel, messages, chips
-  chat/                conversation history, prompt, model call, reply checks
+  chat/                conversation history, key storage, prompt, model call, reply checks
   context/page.ts      reads the page into tagged blocks
-  ui/                  styles, icons, highlights
+  ui/                  styles, icons, highlights, ⚙️ settings view
   server/proxy.ts      the key-hiding proxy
 examples/              Cloudflare Worker for the proxy
 scripts/               copy-to-site helper

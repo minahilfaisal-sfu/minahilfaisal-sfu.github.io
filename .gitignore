@@ -5,3 +5,6 @@ explainer/*.local.js
 
 # Library build folders (see projects/iat-806/project/explainer)
 node_modules/
+
+# Local Claude settings
+.claude/

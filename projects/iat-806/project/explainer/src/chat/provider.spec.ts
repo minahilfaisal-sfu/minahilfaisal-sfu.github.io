@@ -13,6 +13,14 @@ describe('resolveTransport', () => {
     )
     expect(resolveTransport({}, 'me.github.io').kind).toBe('none')
   })
+
+  it("prefers the visitor's own key when allowed", () => {
+    const opts = { endpoint: '/api', devApiKey: 'dev', userApiKey: 'mine', allowUserKey: true }
+    expect(resolveTransport(opts, 'me.github.io')).toEqual({ kind: 'direct', key: 'mine' })
+    expect(resolveTransport({ ...opts, allowUserKey: false }, 'me.github.io').kind).toBe('endpoint')
+    const none = resolveTransport({ allowUserKey: true }, 'me.github.io')
+    expect(none.kind === 'none' && none.reason).toMatch(/API key in settings/)
+  })
 })
 
 describe('complete', () => {

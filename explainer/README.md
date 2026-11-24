@@ -51,9 +51,19 @@ Don't have pnpm? Run `corepack enable` once (it comes with Node), or use `npm` i
 
 The dev key only works on `localhost`. On the live site it is ignored, so a forgotten key can't leak.
 
-## Going live (keeping the key secret)
+## API keys on the live site
 
-Anything inside a public web page can be copied, including API keys. So the live site sends questions to a small **proxy** that holds the key instead.
+Anything inside a public web page can be copied, so your own key never goes in the page. Instead, `config.js` has `allowUserKey: true`:
+
+- Visitors click ⚙️ in the chat (or the "Add API key" prompt), paste their own free key from https://openrouter.ai/keys, and start asking.
+- Their key stays in their browser (only for the tab, unless they tick "Remember on this device") and is only sent to OpenRouter.
+- This site needs no server, and never sees or stores anyone's key.
+
+> Free OpenRouter models allow 50 requests a day per account, or 1,000 a day once the account has bought $10 of credits. With visitor keys, each visitor uses their own limit.
+
+### Optional: a proxy, so visitors don't need a key
+
+If you'd rather pay for visitors' questions with your own key, run a small proxy that keeps it secret:
 
 1. Get an OpenRouter key at https://openrouter.ai/keys.
 2. Create a free Cloudflare account, then in a new folder:
@@ -64,21 +74,18 @@ Anything inside a public web page can be copied, including API keys. So the live
 3. Replace its `src/index.ts` and `wrangler.toml` with the two files from
    `projects/iat-806/project/explainer/examples/cloudflare-worker/`.
    Copy `src/server/proxy.ts` from the library next to `src/index.ts`, and change the import in `index.ts` to `import { createProxyHandler } from './proxy'`.
-   (Once the library is published to npm, you can `npm i` it and keep the original import instead.)
 4. Store the key as a secret, then deploy:
    ```sh
    npx wrangler secret put OPENROUTER_API_KEY
    npx wrangler deploy
    ```
-5. Paste the URL it prints (`https://explainer-proxy.<you>.workers.dev`) into `endpoint` in `config.js`, then push the site.
+5. Paste the URL it prints into `endpoint` in `config.js`, then push the site.
 
-`ALLOWED_ORIGINS` in `wrangler.toml` lists which sites may use the proxy. Add any other site you put the assistant on.
-
-> Free OpenRouter models allow 50 requests a day per account, or 1,000 a day once the account has bought $10 of credits.
+`ALLOWED_ORIGINS` in `wrangler.toml` lists which sites may use the proxy. Visitors who add their own key still use theirs.
 
 ## Using it in another project
 
-Every project needs the same three things: the library, a config with `site` info, and an `endpoint` (your proxy). One proxy can serve several sites; just add each site to `ALLOWED_ORIGINS`.
+Every project needs the same three things: the library, a config with `site` info, and a way to reach the AI: `allowUserKey: true` (visitors bring their own key) and/or an `endpoint` (your proxy). One proxy can serve several sites; just add each site to `ALLOWED_ORIGINS`.
 
 ### Plain HTML site (like this one)
 
@@ -88,7 +95,7 @@ Copy `explainer.iife.js` into the project, then on every page (or in a shared fi
 <script src="explainer.iife.js"></script>
 <script>
   Explainer.init({
-    endpoint: "https://explainer-proxy.<you>.workers.dev",
+    allowUserKey: true, // or endpoint: "https://explainer-proxy.<you>.workers.dev"
     site: {
       name: "My Project",
       description: "What this site is for.",
@@ -110,7 +117,7 @@ pnpm add @minahilfaisal-sfu/explainer
 import { init } from "@minahilfaisal-sfu/explainer";
 
 init({
-  endpoint: "https://explainer-proxy.<you>.workers.dev",
+  allowUserKey: true, // or endpoint: "https://explainer-proxy.<you>.workers.dev"
   site: { name: "My App", description: "…" },
 });
 ```
