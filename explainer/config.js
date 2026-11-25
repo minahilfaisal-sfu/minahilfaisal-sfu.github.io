@@ -27,7 +27,7 @@ Explainer.init({
   offset: { x: 20, y: 20 },
   accentColor: "#3d6b4f",
 
-  persona: "plain", // visitors can flip the Sage toggle
+  persona: "plain", // visitors can flip the Sage toggle (a grumpy dragon who only gives hints)
   title: "Ask about this page",
 
   site: {

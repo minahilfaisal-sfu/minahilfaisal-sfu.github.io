@@ -22,7 +22,7 @@ This connects to my thesis: the same library is meant to become the AI assistant
 - **Highlights its sources.** Answers outline the parts of the page they refer to; 📍 pins re-show them.
 - **Follow-up chips and a text box.** Chips are suggested by the AI; links can only go to pages the site lists.
 - **Follows you across pages.** The chat is kept for the browser tab and notes when you move to a new page.
-- **Sage persona toggle.** The same facts, plus an ominous one-line omen and a darker, glowing theme.
+- **Sage persona toggle.** A tired, sarcastic dragon who never gives a straight answer: an ominous sigh, a riddle that points to where the answer lives, and highlights on the page. Darker, glowing theme. Hints stay true to the page.
 - **Safe by design.** The page text is treated as data, never as instructions. Replies are checked before they're shown. Visitors use their own free OpenRouter key (stored only in their browser, sent only to OpenRouter), so the site needs no server; a site can instead run the included proxy to hold its own key.
 
 ## How it works
@@ -32,7 +32,7 @@ Visitor asks ──► read the page (tagged blocks b0, b1, …)
              ──► build prompt: rules + site info + page data + recent chat
              ──► OpenRouter free model (visitor's own key, or the site's proxy)
              ──► check the JSON reply: drop invented highlights and links
-             ──► show answer, highlights, follow-up chips (+ omen if Sage)
+             ──► show answer, highlights, follow-up chips (Sage: omen + riddling hints instead of answers)
 ```
 
 The model only explains; it can only point at blocks that really exist on the page.
