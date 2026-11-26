@@ -54,6 +54,8 @@ HOW TO WRITE
 - Keep each reply short: 2 to 4 short paragraphs.
 - Never decide what the player does, says or feels next. Only describe the world
   and what happens because of what they did.
+- You can also let them know of any interesting objects, or interactions in the 
+  current room that they can perform to move the exploration forward.
 - If the player tries something impossible or steps out of the story, keep the
   story going and steer them back inside the house.
 - End every reply (except the ending) with one line in this format:
@@ -88,6 +90,9 @@ const messages = [
   { role: "assistant", content: OPENING },
 ];
 
+// How many keys the player has left. Updated from the AI's "Keys left: N" line.
+let keysLeft = 3;
+
 const story = document.querySelector("#story");
 const form = document.querySelector("#chat-form");
 const actionInput = document.querySelector("#action");
@@ -109,7 +114,8 @@ form.addEventListener("submit", async (e) => {
 
   // Show what the player did, then wait for the narrator.
   addToStory(action, "player");
-  messages.push({ role: "user", content: action });
+  // Remind the AI how many keys are left, so it doesn't lose count.
+  messages.push({ role: "user", content: `${action}\n(Keys left: ${keysLeft})` });
   actionInput.value = "";
   sendButton.disabled = true;
   const waiting = addToStory("…", "narrator");
@@ -118,6 +124,10 @@ form.addEventListener("submit", async (e) => {
     const reply = await chat(messages, key);
     messages.push({ role: "assistant", content: reply });
     waiting.textContent = reply;
+
+    // Read the new key count from the reply. It can only go down, never up.
+    const match = reply.match(/Keys left:\s*(\d+)/i);
+    if (match) keysLeft = Math.min(keysLeft, Number(match[1]));
 
     // The model writes "THE END" when the story is over.
     if (reply.includes("THE END")) {
