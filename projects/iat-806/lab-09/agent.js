@@ -15,8 +15,8 @@ THE SETUP
 - The house is controlled by the Shadow Man. He is never fully seen: a shape at
   the end of a hallway, a voice in the walls, a figure in the corner of a mirror.
   He moves furniture, rearranges rooms and plays with the player. He wants them to stay.
-- In their pocket the player has a ring of 5 keys: an iron key, a brass key,
-  a bone-white key, a glass key and a black key.
+- In their pocket the player has a ring of 3 keys: an iron key, a bone-white key
+  and a black key.
 
 THE RULES
 1. The front door can NEVER be used to escape. Outside is a world of endless storm
@@ -43,10 +43,10 @@ THE RULES
    door to find (in a forest, a cave, and at the back of the cave, a door).
    The Shadow Man can follow the player anywhere, and traces of him show up everywhere.
    A key can lead closer to escape or deeper into danger. Never repeat a place.
-5. Keep track of the keys. When the player has used all 5 keys, you decide how the story
+5. Keep track of the keys. When the player has used all 3 keys, you decide how the story
    ends, based on the choices they made: either they escape the Shadow World and survive,
    or they die in it. Write that ending, then finish with the line: THE END
-6. Do not end the story before all 5 keys have been used.
+6. Do not end the story before all 3 keys have been used.
 
 HOW TO WRITE
 - Describe every place in an eerie, ominous way: cold air, sounds with no source,
@@ -62,17 +62,25 @@ HOW TO WRITE
 
 // The opening scene, shown above the chat box. It is also part of the
 // conversation, so the model knows where the story starts.
-const OPENING = `The door looked ordinary. Painted white, a brass handle, the same as a hundred other doors. You opened it, stepped through, and heard it close behind you. When you turned around, there was only wallpaper.
+const OPENING = `The door looked ordinary. Painted white, a brass handle, the same
+ as a hundred other doors. You opened it, stepped through, and heard it close behind 
+ you. When you turned around, there was only wallpaper.
 
-You are standing in the front hall of a house you have never seen. The air is cold enough to see your breath. A single lamp flickers on a side table, and its light doesn't quite reach the corners. At the end of the hallway, something that might be a coat on a hook, or might be a man, stands very still.
+ You are standing in the front hall of a house you have never seen. The air is cold 
+ enough to see your breath. A single lamp flickers on a side table, and its light 
+ doesn't quite reach the corners. At the end of the hallway, something that might be 
+ a coat on a hook, or might be a man, stands very still.
 
-Behind you, the front door rattles in its frame. Through its frosted glass you can see snow driving sideways, and shapes moving in it. They are not trees.
+ Behind you, the front door rattles in its frame. Through its frosted glass you can 
+ see snow driving sideways, and shapes moving in it. They are not trees.
 
-You put your hands in your pockets and find something that wasn't there before: a ring of five keys. Iron, brass, bone-white, glass and black. They are warm, as if someone has just been holding them.
+ You put your hands in your pockets and find something that wasn't there before: a ring 
+ of three keys. Iron, bone-white and black. They are warm, as if someone has just been 
+ holding them.
 
-Somewhere in the house, a floorboard creaks.
+ Somewhere in the house, a floorboard creaks.
 
-Keys left: 5`;
+ Keys left: 3`;
 
 // The full conversation so far, sent to the model on every turn.
 const messages = [
@@ -114,7 +122,8 @@ form.addEventListener("submit", async (e) => {
     // The model writes "THE END" when the story is over.
     if (reply.includes("THE END")) {
       actionInput.disabled = true;
-      actionInput.placeholder = "The story is over. Reload the page to play again.";
+      actionInput.placeholder =
+        "The story is over. Reload the page to play again.";
       return;
     }
   } catch (err) {
