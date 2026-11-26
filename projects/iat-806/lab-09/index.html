@@ -65,8 +65,8 @@
 
       <h1>Lab 09 — API Integration</h1>
       <p class="tagline">
-        The Shadow House: an AI-narrated roleplay. Three keys, one house,
-        and something that doesn't want you to leave.
+        The Shadow House: an AI-narrated roleplay. Three keys, one house, and
+        something that doesn't want you to leave.
       </p>
 
       <!-- The story appears here, turn by turn. -->
@@ -74,15 +74,28 @@
 
       <form id="chat-form">
         <!-- Paste your key here. Never type it into your code: this repo is on GitHub. -->
-        <input id="key" type="password" placeholder="OpenRouter API key (sk-or-...)" autocomplete="new-password" />
-        <textarea id="action" rows="3" placeholder="What do you do? (open a drawer, look out the window, use the iron key...)"></textarea>
+        <input
+          id="key"
+          type="password"
+          placeholder="OpenRouter API key (sk-or-...)"
+          autocomplete="new-password"
+        />
+        <textarea
+          id="action"
+          rows="3"
+          placeholder="What do you do? (open a drawer, look out the window, use the iron key...)"
+        ></textarea>
         <button id="send" type="submit">Send</button>
       </form>
 
       <h2>Notes</h2>
       <p>
-        Write about what you made: what you were going for, what was hard,
-        what you'd do differently. A few sentences is plenty.
+        Created a world-building and roleplay chat integrated with an AI model.
+        You have 3 keys, and the model decides whether you survive / escape
+        after using them all. The number of keys left is tracked in a variable
+        in the code, updated from the AI's replies, and sent back to the AI with
+        every move. The story and world are my own concept; the prompt was
+        written with AI assistance based on my direction.
       </p>
 
       <a
